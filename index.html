@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#16302B">
+<meta name="description" content="Sổ Chi Tiêu — quản lý thu chi cá nhân, lưu dữ liệu ngay trên máy, không cần mạng.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sổ Chi Tiêu">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Sổ Chi Tiêu</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,__ICON180__">
+<link rel="icon" type="image/png" href="data:image/png;base64,__ICON32__">
+<link rel="manifest" id="manifestLink">
+<style>
+:root{
+  --paper:#F1F2ED;
+  --surface:#FFFFFF;
+  --ink:#16302B;
+  --ink-2:#1E4A3D;
+  --accent:#2F7A63;
+  --income:#29936B;
+  --expense:#C1473B;
+  --danger:#C1473B;
+  --text:#1C2320;
+  --text-muted:#6B7670;
+  --divider:#E1E3DC;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#121613;
+    --surface:#1B211D;
+    --ink:#0F2620;
+    --ink-2:#173A30;
+    --accent:#3FA07F;
+    --income:#3FB37F;
+    --expense:#E2665A;
+    --danger:#E2665A;
+    --text:#ECEEEA;
+    --text-muted:#9AA39C;
+    --divider:#2A322D;
+  }
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--paper);
+  color:var(--text);
+  overscroll-behavior-y:none;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit; border:none; background:none; cursor:pointer; touch-action:manipulation;}
+input{font-family:inherit; touch-action:manipulation;}
+button:focus-visible, input:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){
+  *{transition-duration:0.01ms !important; animation-duration:0.01ms !important;}
+}
+
+.app{max-width:520px; margin:0 auto; min-height:100vh; padding-bottom:calc(100px + var(--safe-bottom)); position:relative;}
+
+.header{
+  background:linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 100%);
+  padding:calc(20px + var(--safe-top)) 20px 26px;
+  border-radius:0 0 28px 28px;
+  color:#F4F6F3;
+}
+.header-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;}
+.header-top h1{font-size:19px; font-weight:600; letter-spacing:0.2px;}
+.icon-btn{width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:18px; border-radius:12px; background:rgba(255,255,255,0.1); color:#fff; transition:transform 0.12s ease, background 0.12s ease;}
+.icon-btn:active{background:rgba(255,255,255,0.18); transform:scale(0.93);}
+
+.balance-block{text-align:center; margin-bottom:22px;}
+.balance-label{display:block; font-size:13px; color:rgba(244,246,243,0.65); margin-bottom:6px;}
+.balance-amount{display:block; font-size:36px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-0.5px; word-break:break-all;}
+
+.summary-row{display:flex; gap:12px;}
+.summary-item{flex:1; display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.08); border-radius:16px; padding:12px 12px;}
+.summary-icon{width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;}
+.summary-item.income .summary-icon{background:rgba(63,179,127,0.25);}
+.summary-item.expense .summary-icon{background:rgba(226,102,90,0.22);}
+.summary-text{min-width:0;}
+.summary-label{display:block; font-size:11.5px; color:rgba(244,246,243,0.6); white-space:nowrap;}
+.summary-value{display:block; font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+.filter-tabs{display:flex; gap:4px; padding:14px 20px 2px; position:sticky; top:0; background:var(--paper); z-index:10;}
+.tab{flex:1; padding:10px 0; font-size:14px; font-weight:500; color:var(--text-muted); border-bottom:2px solid transparent; text-align:center; transition:color 0.15s ease, border-color 0.15s ease;}
+.tab.active{color:var(--text); border-color:var(--accent); font-weight:600;}
+
+.transaction-list{padding:4px 20px 20px;}
+.date-group{margin-top:18px;}
+.date-label{display:flex; justify-content:space-between; align-items:baseline; font-size:13px; color:var(--text-muted); padding:0 2px 8px; font-weight:500;}
+.date-total{font-variant-numeric:tabular-nums; font-weight:600;}
+.date-total.income{color:var(--income);}
+.date-total.expense{color:var(--expense);}
+
+.transaction-item{display:flex; align-items:center; gap:12px; padding:12px 2px; border-bottom:1px solid var(--divider);}
+.date-group .transaction-item:last-child{border-bottom:none;}
+
+.item-icon{width:42px; height:42px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;}
+.item-icon.income{background:rgba(41,147,107,0.13);}
+.item-icon.expense{background:rgba(193,71,59,0.11);}
+
+.item-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.item-category{font-size:15px; font-weight:600; color:var(--text);}
+.item-note{font-size:12.5px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.item-right{display:flex; align-items:center; gap:4px;}
+.item-amount{font-size:14.5px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap;}
+.item-amount.income{color:var(--income);}
+.item-amount.expense{color:var(--expense);}
+.delete-btn{width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--text-muted); border-radius:10px; opacity:0.75; transition:transform 0.12s ease, background 0.12s ease;}
+.delete-btn:active{background:var(--divider); opacity:1; transform:scale(0.92);}
+
+.empty-state{text-align:center; padding:60px 30px; color:var(--text-muted);}
+.empty-icon{font-size:42px; margin-bottom:14px;}
+.empty-state p{font-size:16px; font-weight:600; color:var(--text); margin-bottom:6px;}
+.empty-state span{font-size:13.5px;}
+
+.fab{
+  position:fixed;
+  right:20px;
+  bottom:calc(24px + var(--safe-bottom));
+  width:58px; height:58px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#fff;
+  font-size:28px;
+  font-weight:300;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 24px rgba(47,122,99,0.4);
+  z-index:50;
+  transition:transform 0.15s ease;
+  line-height:1;
+}
+.fab:active{transform:scale(0.92);}
+
+.overlay{
+  position:fixed; inset:0; background:rgba(8,12,10,0.5);
+  opacity:0; pointer-events:none; transition:opacity 0.25s ease;
+  z-index:100;
+}
+.overlay.show{opacity:1; pointer-events:auto;}
+
+.bottom-sheet{
+  position:fixed; left:0; right:0; bottom:0;
+  max-width:520px; margin:0 auto;
+  background:var(--surface);
+  border-radius:24px 24px 0 0;
+  transform:translateY(105%);
+  transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  z-index:101;
+  max-height:88vh;
+  display:flex; flex-direction:column;
+  padding-bottom:calc(18px + var(--safe-bottom));
+}
+.bottom-sheet.show{transform:translateY(0);}
+.sheet-handle{width:36px; height:4px; background:var(--divider); border-radius:2px; margin:10px auto 0; flex-shrink:0;}
+.sheet-header{display:flex; align-items:center; justify-content:space-between; padding:14px 10px 6px 18px; flex-shrink:0;}
+.sheet-header h2{font-size:16px; font-weight:600;}
+.text-btn{font-size:15px; color:var(--text-muted); padding:8px 10px;}
+.text-btn.primary{color:var(--accent); font-weight:700;}
+.sheet-body{overflow-y:auto; padding:8px 20px 12px;}
+
+.type-toggle{display:flex; background:var(--paper); border-radius:14px; padding:4px; margin:12px 0 22px;}
+.type-btn{flex:1; padding:11px 0; border-radius:11px; font-size:14.5px; font-weight:600; color:var(--text-muted); transition:background 0.15s ease, color 0.15s ease;}
+.type-btn.active.expense{background:var(--expense); color:#fff;}
+.type-btn.active.income{background:var(--income); color:#fff;}
+
+.amount-input-wrap{display:flex; align-items:baseline; justify-content:center; gap:6px; margin-bottom:22px;}
+#amountInput{
+  border:none; background:none; outline:none;
+  font-size:40px; font-weight:700; text-align:right;
+  color:var(--text); width:auto; max-width:68%;
+  font-variant-numeric:tabular-nums;
+}
+#amountInput::placeholder{color:var(--divider);}
+.currency-suffix{font-size:22px; font-weight:600; color:var(--text-muted);}
+
+.field-group{margin-bottom:20px;}
+.field-group label{display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:10px;}
+.field-group input[type=date], .field-group input[type=text]{
+  width:100%; padding:13px 14px; border-radius:13px; border:1.5px solid var(--divider);
+  background:var(--paper); font-size:16px; color:var(--text); outline:none;
+  transition:border-color 0.15s ease;
+}
+.field-group input:focus{border-color:var(--accent);}
+
+.category-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+.category-btn{display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 4px; border-radius:15px; background:var(--paper); border:1.5px solid transparent; transition:border-color 0.12s ease, background 0.12s ease;}
+.category-btn.active{border-color:var(--accent); background:rgba(47,122,99,0.1);}
+.category-icon{font-size:21px;}
+.category-name{font-size:11.5px; font-weight:500; color:var(--text); text-align:center; line-height:1.2;}
+
+.settings-item{display:flex; align-items:center; gap:14px; width:100%; padding:14px 2px; border-bottom:1px solid var(--divider); text-align:left;}
+.settings-item:active{opacity:0.7;}
+.settings-icon{width:40px; height:40px; border-radius:12px; background:var(--paper); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;}
+.settings-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.settings-text strong{font-size:15px; font-weight:600; color:var(--text);}
+.settings-text span{font-size:12.5px; color:var(--text-muted);}
+.settings-item.danger .settings-text strong{color:var(--danger);}
+.privacy-note{font-size:12.5px; color:var(--text-muted); line-height:1.55; margin-top:16px; padding:14px; background:var(--paper); border-radius:14px;}
+
+.confirm-modal{
+  position:fixed; left:20px; right:20px; top:50%;
+  transform:translateY(-50%) scale(0.92);
+  max-width:340px; margin:0 auto;
+  background:var(--surface); border-radius:20px; padding:22px 20px;
+  z-index:201; opacity:0; pointer-events:none;
+  transition:opacity 0.2s ease, transform 0.2s ease;
+}
+.confirm-modal.show{opacity:1; pointer-events:auto; transform:translateY(-50%) scale(1);}
+.confirm-modal p{font-size:15px; color:var(--text); line-height:1.5; text-align:center; margin-bottom:18px;}
+.confirm-actions{display:flex; gap:10px;}
+.confirm-actions button{flex:1; padding:12px 0; border-radius:13px; font-size:14.5px; font-weight:600;}
+#confirmCancel{background:var(--paper); color:var(--text);}
+#confirmOk{background:var(--danger); color:#fff;}
+#confirmOverlay{z-index:200;}
+
+.toast{
+  position:fixed; left:20px; right:20px; bottom:calc(96px + var(--safe-bottom));
+  max-width:480px; margin:0 auto;
+  background:var(--ink); color:#F4F6F3;
+  padding:13px 18px; border-radius:14px; font-size:14px; font-weight:500;
+  text-align:center;
+  opacity:0; transform:translateY(10px); pointer-events:none;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+  z-index:300;
+}
+.toast.show{opacity:1; transform:translateY(0);}
+.toast.error{background:var(--expense);}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div class="header-top">
+      <h1>Sổ Chi Tiêu</h1>
+      <button class="icon-btn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
+    </div>
+    <div class="balance-block">
+      <span class="balance-label">Số dư hiện tại</span>
+      <span class="balance-amount" id="balanceAmount">0 ₫</span>
+    </div>
+    <div class="summary-row">
+      <div class="summary-item income">
+        <span class="summary-icon">↑</span>
+        <div class="summary-text">
+          <span class="summary-label">Tổng thu</span>
+          <span class="summary-value" id="totalIncome">0 ₫</span>
+        </div>
+      </div>
+      <div class="summary-item expense">
+        <span class="summary-icon">↓</span>
+        <div class="summary-text">
+          <span class="summary-label">Tổng chi</span>
+          <span class="summary-value" id="totalExpense">0 ₫</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="tab active" data-filter="all">Tất cả</button>
+    <button class="tab" data-filter="income">Thu nhập</button>
+    <button class="tab" data-filter="expense">Chi tiêu</button>
+  </div>
+
+  <main class="transaction-list" id="transactionList"></main>
+
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="empty-icon">🗒</div>
+    <p>Chưa có giao dịch nào</p>
+    <span>Nhấn nút + bên dưới để thêm giao dịch đầu tiên</span>
+  </div>
+</div>
+
+<button class="fab" id="fabAdd" aria-label="Thêm giao dịch">+</button>
+
+<div class="overlay" id="sheetOverlay"></div>
+
+<div class="bottom-sheet" id="addSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <button class="text-btn" id="cancelAdd">Hủy</button>
+    <h2>Thêm giao dịch</h2>
+    <button class="text-btn primary" id="saveAdd">Lưu</button>
+  </div>
+  <div class="sheet-body">
+    <div class="type-toggle" id="typeToggle">
+      <button type="button" class="type-btn expense active" data-type="expense">Chi tiêu</button>
+      <button type="button" class="type-btn income" data-type="income">Thu nhập</button>
+    </div>
+
+    <div class="amount-input-wrap">
+      <input type="text" inputmode="numeric" id="amountInput" placeholder="0" autocomplete="off">
+      <span class="currency-suffix">₫</span>
+    </div>
+
+    <div class="field-group">
+      <label>Danh mục</label>
+      <div class="category-grid" id="categoryGrid"></div>
+    </div>
+
+    <div class="field-group">
+      <label>Ngày</label>
+      <input type="date" id="dateInput">
+    </div>
+
+    <div class="field-group" style="margin-bottom:4px;">
+      <label>Ghi chú</label>
+      <input type="text" id="noteInput" placeholder="Ghi chú (không bắt buộc)" maxlength="100" autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<div class="bottom-sheet" id="settingsSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span style="width:40px;"></span>
+    <h2>Cài đặt</h2>
+    <button class="text-btn" id="closeSettings">Xong</button>
+  </div>
+  <div class="sheet-body">
+    <button class="settings-item" id="exportBtn">
+      <span class="settings-icon">⬇</span>
+      <div class="settings-text">
+        <strong>Sao lưu dữ liệu</strong>
+        <span>Tải toàn bộ dữ liệu về file JSON</span>
+      </div>
+    </button>
+    <button class="settings-item" id="importBtn">
+      <span class="settings-icon">⬆</span>
+      <div class="settings-text">
+        <strong>Khôi phục dữ liệu</strong>
+        <span>Nạp dữ liệu từ file JSON đã sao lưu</span>
+      </div>
+    </button>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+    <button class="settings-item danger" id="clearBtn">
+      <span class="settings-icon">🗑</span>
+      <div class="settings-text">
+        <strong>Xóa toàn bộ dữ liệu</strong>
+        <span>Không thể hoàn tác</span>
+      </div>
+    </button>
+    <p class="privacy-note">🔒 Toàn bộ dữ liệu được lưu trực tiếp trên thiết bị của bạn bằng LocalStorage. Ứng dụng không kết nối máy chủ nào và không gửi dữ liệu đi bất kỳ đâu. Hãy sao lưu định kỳ để không mất dữ liệu khi đổi điện thoại hoặc xóa trình duyệt.</p>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay"></div>
+<div class="confirm-modal" id="confirmModal">
+  <p id="confirmMessage"></p>
+  <div class="confirm-actions">
+    <button id="confirmCancel">Hủy</button>
+    <button id="confirmOk">Xóa</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "solichitieu_transactions_v1";
+  var transactions = [];
+  var currentType = "expense";
+  var selectedCategory = null;
+  var currentFilter = "all";
+  var confirmCallback = null;
+  var toastTimer = null;
+
+  var CATEGORIES = {
+    expense: [
+      {id:"food", name:"Ăn uống", icon:"🍔"},
+      {id:"transport", name:"Đi lại", icon:"🚗"},
+      {id:"shopping", name:"Mua sắm", icon:"🛍"},
+      {id:"bill", name:"Hóa đơn", icon:"💡"},
+      {id:"entertainment", name:"Giải trí", icon:"🎮"},
+      {id:"health", name:"Sức khỏe", icon:"💊"},
+      {id:"education", name:"Giáo dục", icon:"📚"},
+      {id:"other_expense", name:"Khác", icon:"📦"}
+    ],
+    income: [
+      {id:"salary", name:"Lương", icon:"💰"},
+      {id:"bonus", name:"Thưởng", icon:"🎁"},
+      {id:"invest", name:"Đầu tư", icon:"📈"},
+      {id:"other_income", name:"Khác", icon:"💵"}
+    ]
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  var balanceAmount = $("balanceAmount");
+  var totalIncomeEl = $("totalIncome");
+  var totalExpenseEl = $("totalExpense");
+  var transactionListEl = $("transactionList");
+  var emptyStateEl = $("emptyState");
+  var filterTabsEl = $("filterTabs");
+
+  var fabAdd = $("fabAdd");
+  var sheetOverlay = $("sheetOverlay");
+  var addSheet = $("addSheet");
+  var settingsSheet = $("settingsSheet");
+  var cancelAddBtn = $("cancelAdd");
+  var saveAddBtn = $("saveAdd");
+  var typeToggle = $("typeToggle");
+  var amountInput = $("amountInput");
+  var categoryGrid = $("categoryGrid");
+  var dateInput = $("dateInput");
+  var noteInput = $("noteInput");
+
+  var settingsBtn = $("settingsBtn");
+  var closeSettingsBtn = $("closeSettings");
+  var exportBtn = $("exportBtn");
+  var importBtn = $("importBtn");
+  var importFileInput = $("importFile");
+  var clearBtn = $("clearBtn");
+
+  var confirmOverlay = $("confirmOverlay");
+  var confirmModal = $("confirmModal");
+  var confirmMessage = $("confirmMessage");
+  var confirmCancelBtn = $("confirmCancel");
+  var confirmOkBtn = $("confirmOk");
+
+  var toastEl = $("toast");
+
+  function loadData(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      var parsed = raw ? JSON.parse(raw) : [];
+      transactions = Array.isArray(parsed) ? parsed : [];
+    } catch(e){
+      transactions = [];
+    }
+  }
+
+  function saveData(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    } catch(e){
+      showToast("Không thể lưu dữ liệu. Bộ nhớ trình duyệt có thể đã đầy.", true);
+    }
+  }
+
+  function escapeHtml(str){
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
+  function formatMoney(n){
+    return Number(n || 0).toLocaleString("vi-VN") + " ₫";
+  }
+
+  function todayStr(){
+    var d = new Date();
+    var offset = d.getTimezoneOffset();
+    var local = new Date(d.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  function addDaysStr(dateStr, days){
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    var offset = d.getTimezoneOffset();
+    var local = new Date(d.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  function formatDateLabel(dateStr){
+    var today = todayStr();
+    var yesterday = addDaysStr(today, -1);
+    if (dateStr === today) return "Hôm nay";
+    if (dateStr === yesterday) return "Hôm qua";
+    var parts = dateStr.split("-");
+    var y = parts[0], m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+    var months = ["Th1","Th2","Th3","Th4","Th5","Th6","Th7","Th8","Th9","Th10","Th11","Th12"];
+    return d + " " + months[m - 1] + ", " + y;
+  }
+
+  function findCategory(type, id){
+    var list = CATEGORIES[type] || [];
+    for (var i = 0; i < list.length; i++){
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  }
+
+  function genId(){
+    return "tx_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+  }
+
+  function showToast(message, isError){
+    clearTimeout(toastTimer);
+    toastEl.textContent = message;
+    toastEl.className = "toast show" + (isError ? " error" : "");
+    toastTimer = setTimeout(function(){
+      toastEl.classList.remove("show");
+    }, 2200);
+  }
+
+  function renderSummary(){
+    var income = 0, expense = 0;
+    for (var i = 0; i < transactions.length; i++){
+      var t = transactions[i];
+      if (t.type === "income") income += Number(t.amount) || 0;
+      else expense += Number(t.amount) || 0;
+    }
+    var balance = income - expense;
+    balanceAmount.textContent = formatMoney(balance);
+    totalIncomeEl.textContent = formatMoney(income);
+    totalExpenseEl.textContent = formatMoney(expense);
+  }
+
+  function renderItem(t){
+    var cat = findCategory(t.type, t.category);
+    var icon = cat ? cat.icon : "📦";
+    var catName = cat ? cat.name : "Khác";
+    var isIncome = t.type === "income";
+    var sign = isIncome ? "+" : "-";
+    var cls = isIncome ? "income" : "expense";
+    var noteHtml = t.note ? '<span class="item-note">' + escapeHtml(t.note) + "</span>" : "";
+    return (
+      '<div class="transaction-item" data-id="' + t.id + '">' +
+        '<div class="item-icon ' + cls + '">' + icon + "</div>" +
+        '<div class="item-info">' +
+          '<span class="item-category">' + escapeHtml(catName) + "</span>" +
+          noteHtml +
+        "</div>" +
+        '<div class="item-right">' +
+          '<span class="item-amount ' + cls + '">' + sign + Number(t.amount).toLocaleString("vi-VN") + " ₫</span>" +
+          '<button class="delete-btn" data-delete-id="' + t.id + '" aria-label="Xóa giao dịch">🗑</button>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderList(){
+    var filtered = transactions;
+    if (currentFilter !== "all"){
+      filtered = transactions.filter(function(t){ return t.type === currentFilter; });
+    }
+
+    if (filtered.length === 0){
+      transactionListEl.innerHTML = "";
+      emptyStateEl.style.display = "block";
+      return;
+    }
+    emptyStateEl.style.display = "none";
+
+    var sorted = filtered.slice().sort(function(a, b){
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+
+    var order = [];
+    var groups = {};
+    for (var i = 0; i < sorted.length; i++){
+      var t = sorted[i];
+      if (!groups[t.date]){
+        groups[t.date] = [];
+        order.push(t.date);
+      }
+      groups[t.date].push(t);
+    }
+
+    var html = "";
+    for (var g = 0; g < order.length; g++){
+      var date = order[g];
+      var items = groups[date];
+      var dayTotal = 0;
+      var rowsHtml = "";
+      for (var j = 0; j < items.length; j++){
+        var it = items[j];
+        dayTotal += it.type === "income" ? Number(it.amount) : -Number(it.amount);
+        rowsHtml += renderItem(it);
+      }
+      var totalCls = dayTotal >= 0 ? "income" : "expense";
+      var totalSign = dayTotal >= 0 ? "+" : "-";
+      html +=
+        '<div class="date-group">' +
+          '<div class="date-label">' +
+            "<span>" + formatDateLabel(date) + "</span>" +
+            '<span class="date-total ' + totalCls + '">' + totalSign + Math.abs(dayTotal).toLocaleString("vi-VN") + " ₫</span>" +
+          "</div>" +
+          rowsHtml +
+        "</div>";
+    }
+    transactionListEl.innerHTML = html;
+  }
+
+  function renderAll(){
+    renderSummary();
+    renderList();
+  }
+
+  function renderCategoryGrid(){
+    var cats = CATEGORIES[currentType];
+    var html = "";
+    for (var i = 0; i < cats.length; i++){
+      var c = cats[i];
+      var active = selectedCategory === c.id ? " active" : "";
+      html +=
+        '<button type="button" class="category-btn' + active + '" data-cat-id="' + c.id + '">' +
+          '<span class="category-icon">' + c.icon + "</span>" +
+          '<span class="category-name">' + c.name + "</span>" +
+        "</button>";
+    }
+    categoryGrid.innerHTML = html;
+  }
+
+  function openSheet(sheetEl){
+    sheetOverlay.classList.add("show");
+    sheetEl.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSheets(){
+    sheetOverlay.classList.remove("show");
+    addSheet.classList.remove("show");
+    settingsSheet.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  function showConfirm(message, onConfirm){
+    confirmMessage.textContent = message;
+    confirmCallback = onConfirm;
+    confirmOverlay.classList.add("show");
+    confirmModal.classList.add("show");
+  }
+
+  function hideConfirm(){
+    confirmOverlay.classList.remove("show");
+    confirmModal.classList.remove("show");
+    confirmCallback = null;
+  }
+
+  function resetAddForm(){
+    currentType = "expense";
+    selectedCategory = null;
+    amountInput.value = "";
+    noteInput.value = "";
+    dateInput.value = todayStr();
+    var btns = typeToggle.querySelectorAll(".type-btn");
+    for (var i = 0; i < btns.length; i++){
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-type") === "expense");
+    }
+    renderCategoryGrid();
+  }
+
+  fabAdd.addEventListener("click", function(){
+    resetAddForm();
+    openSheet(addSheet);
+    setTimeout(function(){ amountInput.focus(); }, 300);
+  });
+
+  cancelAddBtn.addEventListener("click", closeSheets);
+  sheetOverlay.addEventListener("click", closeSheets);
+
+  typeToggle.addEventListener("click", function(e){
+    var btn = e.target.closest(".type-btn");
+    if (!btn) return;
+    currentType = btn.getAttribute("data-type");
+    var btns = typeToggle.querySelectorAll(".type-btn");
+    for (var i = 0; i < btns.length; i++){
+      btns[i].classList.toggle("active", btns[i] === btn);
+    }
+    selectedCategory = null;
+    renderCategoryGrid();
+  });
+
+  categoryGrid.addEventListener("click", function(e){
+    var btn = e.target.closest(".category-btn");
+    if (!btn) return;
+    selectedCategory = btn.getAttribute("data-cat-id");
+    renderCategoryGrid();
+  });
+
+  amountInput.addEventListener("input", function(e){
+    var raw = e.target.value.replace(/\D/g, "").slice(0, 15);
+    e.target.value = raw === "" ? "" : Number(raw).toLocaleString("vi-VN");
+  });
+
+  saveAddBtn.addEventListener("click", function(){
+    var rawAmount = amountInput.value.replace(/\D/g, "");
+    var amount = Number(rawAmount);
+    if (!amount || amount <= 0){
+      showToast("Vui lòng nhập số tiền hợp lệ", true);
+      return;
+    }
+    if (!selectedCategory){
+      showToast("Vui lòng chọn danh mục", true);
+      return;
+    }
+    var t = {
+      id: genId(),
+      type: currentType,
+      amount: amount,
+      category: selectedCategory,
+      date: dateInput.value || todayStr(),
+      note: noteInput.value.trim(),
+      createdAt: Date.now()
+    };
+    transactions.push(t);
+    saveData();
+    renderAll();
+    closeSheets();
+    showToast("Đã thêm giao dịch");
+  });
+
+  transactionListEl.addEventListener("click", function(e){
+    var delBtn = e.target.closest(".delete-btn");
+    if (!delBtn) return;
+    var id = delBtn.getAttribute("data-delete-id");
+    showConfirm("Bạn có chắc muốn xóa giao dịch này?", function(){
+      transactions = transactions.filter(function(t){ return t.id !== id; });
+      saveData();
+      renderAll();
+      showToast("Đã xóa giao dịch");
+    });
+  });
+
+  filterTabsEl.addEventListener("click", function(e){
+    var btn = e.target.closest(".tab");
+    if (!btn) return;
+    currentFilter = btn.getAttribute("data-filter");
+    var tabs = filterTabsEl.querySelectorAll(".tab");
+    for (var i = 0; i < tabs.length; i++){
+      tabs[i].classList.toggle("active", tabs[i] === btn);
+    }
+    renderList();
+  });
+
+  settingsBtn.addEventListener("click", function(){ openSheet(settingsSheet); });
+  closeSettingsBtn.addEventListener("click", closeSheets);
+
+  function exportData(){
+    if (transactions.length === 0){
+      showToast("Chưa có dữ liệu để sao lưu", true);
+      return;
+    }
+    var dataStr = JSON.stringify(transactions, null, 2);
+    var blob = new Blob([dataStr], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var now = todayStr();
+    a.href = url;
+    a.download = "saoluu-chitieu-" + now + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    showToast("Đã sao lưu dữ liệu thành công");
+  }
+
+  function isValidTransaction(t){
+    return t && typeof t === "object" &&
+      (t.type === "income" || t.type === "expense") &&
+      typeof t.amount === "number" && t.amount > 0 &&
+      typeof t.date === "string";
+  }
+
+  function importData(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var data;
+      try {
+        data = JSON.parse(e.target.result);
+      } catch(err){
+        showToast("File không hợp lệ, vui lòng kiểm tra lại", true);
+        return;
+      }
+      if (!Array.isArray(data) || !data.every(isValidTransaction)){
+        showToast("Định dạng file không đúng", true);
+        return;
+      }
+      var cleaned = data.map(function(t){
+        return {
+          id: t.id || genId(),
+          type: t.type,
+          amount: Number(t.amount),
+          category: t.category || "other_" + t.type,
+          date: t.date,
+          note: typeof t.note === "string" ? t.note : "",
+          createdAt: typeof t.createdAt === "number" ? t.createdAt : Date.now()
+        };
+      });
+      showConfirm("Khôi phục sẽ THAY THẾ toàn bộ " + transactions.length + " giao dịch hiện tại bằng " + cleaned.length + " giao dịch từ file. Tiếp tục?", function(){
+        transactions = cleaned;
+        saveData();
+        renderAll();
+        closeSheets();
+        showToast("Khôi phục dữ liệu thành công");
+      });
+    };
+    reader.onerror = function(){
+      showToast("Không thể đọc file", true);
+    };
+    reader.readAsText(file);
+  }
+
+  exportBtn.addEventListener("click", exportData);
+  importBtn.addEventListener("click", function(){ importFileInput.click(); });
+  importFileInput.addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if (file) importData(file);
+    importFileInput.value = "";
+  });
+
+  clearBtn.addEventListener("click", function(){
+    if (transactions.length === 0){
+      showToast("Không có dữ liệu để xóa", true);
+      return;
+    }
+    showConfirm("Xóa toàn bộ " + transactions.length + " giao dịch? Hành động này không thể hoàn tác.", function(){
+      transactions = [];
+      saveData();
+      renderAll();
+      closeSheets();
+      showToast("Đã xóa toàn bộ dữ liệu");
+    });
+  });
+
+  confirmCancelBtn.addEventListener("click", hideConfirm);
+  confirmOverlay.addEventListener("click", hideConfirm);
+  confirmOkBtn.addEventListener("click", function(){
+    var cb = confirmCallback;
+    hideConfirm();
+    if (cb) cb();
+  });
+
+  function setupManifest(){
+    try {
+      var manifest = {
+        name: "Sổ Chi Tiêu",
+        short_name: "Chi Tiêu",
+        description: "Quản lý thu chi cá nhân, lưu dữ liệu ngay trên thiết bị",
+        start_url: ".",
+        scope: ".",
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#F1F2ED",
+        theme_color: "#16302B",
+        lang: "vi",
+        icons: [
+          {src: "data:image/png;base64,__ICON192__", sizes: "192x192", type: "image/png", purpose: "any"},
+          {src: "data:image/png;base64,__ICON512__", sizes: "512x512", type: "image/png", purpose: "any"},
+          {src: "data:image/png;base64,__ICON192__", sizes: "192x192", type: "image/png", purpose: "maskable"}
+        ]
+      };
+      var blob = new Blob([JSON.stringify(manifest)], {type: "application/json"});
+      $("manifestLink").setAttribute("href", URL.createObjectURL(blob));
+    } catch(e){}
+  }
+
+  function setupServiceWorker(){
+    if (!("serviceWorker" in navigator)) return;
+    try {
+      var swCode =
+        "self.addEventListener('install',function(e){self.skipWaiting();});" +
+        "self.addEventListener('activate',function(e){self.clients.claim();});" +
+        "self.addEventListener('fetch',function(e){" +
+          "e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request);}));" +
+        "});";
+      var swBlob = new Blob([swCode], {type: "application/javascript"});
+      var swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(function(){});
+    } catch(e){}
+  }
+
+  loadData();
+  renderAll();
+  dateInput.value = todayStr();
+  renderCategoryGrid();
+  setupManifest();
+  setupServiceWorker();
+})();
+</script>
+</body>
+</html>
