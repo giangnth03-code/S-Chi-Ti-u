@@ -17,7 +17,6 @@
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ccircle%20cx='96'%20cy='96'%20r='58'%20fill='white'/%3E%3Ctext%20x='96'%20y='108'%20font-size='68'%20font-family='Arial,%20sans-serif'%20fill='%232451e8'%20text-anchor='middle'%20font-weight='bold'%3E%E2%82%AB%3C/text%3E%3C/svg%3E">
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ccircle%20cx='96'%20cy='96'%20r='58'%20fill='white'/%3E%3Ctext%20x='96'%20y='108'%20font-size='68'%20font-family='Arial,%20sans-serif'%20fill='%232451e8'%20text-anchor='middle'%20font-weight='bold'%3E%E2%82%AB%3C/text%3E%3C/svg%3E">
 <style>
-/* ============================= DESIGN TOKENS ============================= */
 :root{
   --bg:#f8fafc;
   --bg-elevated:#ffffff;
@@ -80,7 +79,6 @@ button, input, select, textarea{font-family:inherit;color:inherit;}
 h1,h2,h3,p{margin:0;}
 button{cursor:pointer;-webkit-user-select:none;user-select:none;}
 
-/* touch feedback everywhere */
 button, .debt-card-header, .installment-chip[data-pay-installment], .txn-item, .recurring-item{
   transition:transform .15s var(--ease), background-color .15s var(--ease), opacity .15s var(--ease);
 }
@@ -88,7 +86,6 @@ button:active, .debt-card-header:active, .installment-chip[data-pay-installment]
   transform:scale(0.97);
 }
 
-/* ===== LAYOUT ===== */
 #app{display:flex;flex-direction:column;min-height:100%;padding-bottom:calc(78px + env(safe-area-inset-bottom));}
 .topbar{
   position:sticky;top:0;z-index:20;background:var(--bg);
@@ -102,7 +99,6 @@ main{flex:1;padding:16px 16px 24px;}
 .view.active{display:block;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-/* ===== CARD SYSTEM ===== */
 .card, .stat-box, .debt-card{
   background:var(--bg-elevated);
   border-radius:var(--radius-card);
@@ -117,7 +113,6 @@ main{flex:1;padding:16px 16px 24px;}
   margin-bottom:14px;
 }
 
-/* ===== ICON SYSTEM ===== */
 .icon-box{
   width:var(--icon-box);height:var(--icon-box);min-width:var(--icon-box);
   border-radius:11px;background:var(--bg-soft);
@@ -128,8 +123,7 @@ main{flex:1;padding:16px 16px 24px;}
 .icon-box.action:active{background:var(--border);}
 .icon-box.danger-tone{background:var(--danger-bg);color:var(--danger);}
 
-/* ===== STAT GRID / HERO NUMBERS ===== */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .stat-box .label{font-size:var(--fs-meta);color:var(--text-dim);margin-bottom:8px;font-weight:500;}
 .stat-box .value{font-size:var(--fs-amount);font-weight:700;line-height:1.25;}
 .stat-box.hero{grid-column:1/-1;}
@@ -144,7 +138,6 @@ main{flex:1;padding:16px 16px 24px;}
 
 .chart-wrap{position:relative;height:220px;}
 
-/* ===== TABS / SEGMENTED ===== */
 .tabs{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tabs button{
@@ -156,7 +149,6 @@ main{flex:1;padding:16px 16px 24px;}
 .segmented button{flex:1;height:var(--control-h);background:var(--bg-soft);border:none;color:var(--text-dim);font-weight:700;font-size:14px;}
 .segmented button.active{background:var(--primary);color:#fff;}
 
-/* ===== FORM CONTROLS ===== */
 .search-row{display:flex;gap:8px;margin-bottom:10px;}
 .search-row input[type="text"]{flex:1;}
 input[type="text"], input[type="number"], input[type="date"], input[type="tel"], select, textarea{
@@ -183,7 +175,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .custom-range{display:none;gap:8px;margin-bottom:10px;}
 .custom-range.show{display:flex;}
 
-/* quick money chips */
 .chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .chip-btn{
   height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--border);
@@ -191,7 +182,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 }
 .chip-btn:active{background:var(--primary-soft);color:var(--primary);}
 
-/* ===== TRANSACTION LIST ===== */
 .txn-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
 .txn-item:last-child{border-bottom:none;}
 .txn-info{flex:1;min-width:0;}
@@ -200,13 +190,12 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .txn-amount{text-align:right;font-weight:700;font-size:var(--fs-amount);white-space:nowrap;}
 .txn-actions{display:flex;gap:6px;margin-left:4px;flex-shrink:0;}
 
-/* ===== DEBT OVERVIEW ===== */
 .debt-overview-hero{display:flex;flex-direction:column;gap:4px;}
 .schedule-summary{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;gap:10px;}
 .schedule-summary .col .label{font-size:var(--fs-meta);color:var(--text-dim);margin-bottom:4px;}
 .schedule-summary .col .val{font-size:21px;font-weight:800;}
 .schedule-summary .col.right{text-align:right;}
-.schedule-list{margin-top:4px;}
+.schedule-list{margin-top:14px;}
 .schedule-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
 .schedule-row:last-child{border-bottom:none;}
 .schedule-row .day-badge{
@@ -218,7 +207,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .schedule-row .info .m{font-size:var(--fs-meta);color:var(--text-dim);}
 .schedule-row .amt{font-weight:700;font-size:var(--fs-body);white-space:nowrap;}
 
-/* ===== DEBT CARD (Accordion) ===== */
 .debt-card{margin-bottom:12px;padding:0;overflow:hidden;}
 .debt-card-header{display:flex;align-items:center;gap:10px;padding:var(--pad-card);cursor:pointer;}
 .debt-card-header .dch-main{flex:1;min-width:0;}
@@ -243,7 +231,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .debt-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
 .debt-actions .btn{width:100%;margin:0;}
 
-/* ===== BUTTONS ===== */
 .btn{
   height:var(--control-h);padding:0 14px;border-radius:var(--radius-control);border:none;
   font-weight:700;font-size:14px;background:var(--primary);color:#fff;
@@ -256,7 +243,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .btn:disabled{opacity:.4;}
 .btn.block{width:100%;margin-top:14px;}
 
-/* ===== BUDGET ===== */
 .budget-row{margin-bottom:18px;}
 .budget-row:last-child{margin-bottom:0;}
 .budget-row .top{display:flex;justify-content:space-between;align-items:center;font-size:var(--fs-body);margin-bottom:6px;gap:10px;}
@@ -264,14 +250,12 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .budget-row .top .amounts{color:var(--text-dim);font-size:var(--fs-meta);text-align:right;white-space:nowrap;}
 .budget-row input{margin-top:8px;}
 
-/* ===== RECURRING ===== */
 .recurring-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
 .recurring-item:last-child{border-bottom:none;}
 .recurring-item .info{flex:1;min-width:0;}
 .recurring-item .info .t{font-weight:700;font-size:var(--fs-body);}
 .recurring-item .info .m{font-size:var(--fs-meta);color:var(--text-dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
-/* ===== SETTINGS ===== */
 .settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
 .settings-row:last-child{border-bottom:none;}
 .settings-row .t{font-weight:700;font-size:var(--fs-body);}
@@ -286,7 +270,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .empty-state{text-align:center;padding:36px 10px;color:var(--text-dim);font-size:var(--fs-body);}
 .empty-state .icon-box{margin:0 auto 12px;width:52px;height:52px;font-size:24px;border-radius:14px;}
 
-/* ===== FAB ===== */
 .fab{
   position:fixed;right:18px;bottom:calc(90px + env(safe-area-inset-bottom));
   width:56px;height:56px;border-radius:17px;background:var(--primary);color:#fff;
@@ -297,7 +280,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .fab:active{transform:scale(0.92);}
 .fab.hidden{display:none;}
 
-/* ===== BOTTOM NAV ===== */
 .bottomnav{
   position:fixed;left:0;right:0;bottom:0;z-index:25;
   background:var(--bg-elevated);border-top:1px solid var(--border);
@@ -312,7 +294,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .bottomnav button.active .icon-box{background:var(--primary-soft);color:var(--primary);}
 .bottomnav button.active .nav-label{color:var(--primary);font-weight:700;}
 
-/* ===== MODAL ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(10,14,25,0.55);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
 .modal-overlay.hidden{display:none;}
 .modal-box{
@@ -320,6 +301,7 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
   overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   border-radius:22px 22px 0 0;padding:16px 18px calc(24px + env(safe-area-inset-bottom));
   animation:slideup .25s var(--ease);
+  position:relative;
 }
 @keyframes slideup{from{transform:translateY(30px);opacity:.5;}to{transform:translateY(0);opacity:1;}}
 .modal-box h2{margin:0 0 4px;font-size:17px;font-weight:700;}
@@ -333,7 +315,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 }
 .toast.hidden{display:none;}
 
-/* ===== PIN LOCK SCREEN ===== */
 #lockScreen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
 #lockScreen.hidden{display:none;}
 .lock-top{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;}
@@ -353,7 +334,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .hidden{display:none !important;}
 .small-note{font-size:var(--fs-meta);color:var(--text-dim);margin-top:10px;line-height:1.5;}
 
-/* ===== DEBT INSTALLMENT GRID ===== */
 .installment-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
 .installment-chip{
   min-width:44px;height:36px;padding:0 10px;border-radius:10px;
@@ -370,7 +350,6 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .history-row .m{color:var(--text-dim);}
 .history-row b{color:var(--text);}
 
-/* ===== PAYMENT SCHEDULE TABLE (per debt) ===== */
 .schedule-table-head{display:flex;font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;padding:10px 0 6px;border-bottom:1px solid var(--border);}
 .schedule-table-head .c1{flex:1.3;}
 .schedule-table-head .c2{flex:1.4;text-align:right;}
@@ -391,6 +370,45 @@ button.pay-schedule-row:disabled{opacity:.55;cursor:default;}
 .status-pill.paid{background:var(--success-bg);color:var(--success);}
 .status-pill.due{background:var(--primary);color:#fff;}
 .status-pill.pending{background:var(--bg-soft);color:var(--text-dim);}
+
+/* ===== CUSTOM SELECT (thay the select goc) ===== */
+.csel-wrap{position:relative;}
+.csel-native{position:absolute !important;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;}
+.csel-trigger{
+  width:100%;height:var(--control-h);padding:0 38px 0 13px;border-radius:var(--radius-control);
+  border:1px solid var(--border);background:var(--bg-soft);color:var(--text);font-size:var(--fs-body);
+  font-weight:700;display:flex;align-items:center;text-align:left;position:relative;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  transition:border-color .15s var(--ease),background-color .15s var(--ease);
+}
+.csel-trigger::after{
+  content:"";position:absolute;right:14px;top:50%;width:10px;height:10px;
+  border-right:2.2px solid var(--text-dim);border-bottom:2.2px solid var(--text-dim);
+  transform:translateY(-70%) rotate(45deg);transition:transform .2s var(--ease);
+  pointer-events:none;
+}
+.csel-trigger.open{border-color:var(--primary);background:var(--primary-soft);}
+.csel-trigger.open::after{transform:translateY(-30%) rotate(-135deg);}
+.csel-trigger:disabled{opacity:.5;}
+.csel-panel{
+  position:fixed;z-index:400;background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:14px;box-shadow:0 12px 32px -6px rgba(0,0,0,0.28);
+  max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px;
+  display:none;
+}
+.csel-panel.open{display:block;}
+.csel-option{
+  padding:11px 12px;border-radius:9px;font-size:14.5px;font-weight:600;color:var(--text);
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.csel-option:active{background:var(--bg-soft);}
+.csel-option.selected{background:var(--primary-soft);color:var(--primary);}
+.csel-option .csel-check{color:var(--primary);font-weight:800;opacity:0;}
+.csel-option.selected .csel-check{opacity:1;}
+@media (hover:hover){
+  .csel-option:hover{background:var(--bg-soft);}
+  .csel-option.selected:hover{background:var(--primary-soft);}
+}
 </style>
 </head>
 <body>
@@ -432,6 +450,7 @@ button.pay-schedule-row:disabled{opacity:.55;cursor:default;}
 <div id="modalOverlay" class="modal-overlay hidden"><div class="modal-box" id="modalBox"></div></div>
 <div id="toast" class="toast hidden"></div>
 <input type="file" id="importFileInput" accept="application/json" class="hidden">
+<div id="cselPanel" class="csel-panel"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 <script defer>
@@ -468,9 +487,11 @@ var pinMode = 'unlock';
 var pinFirstEntry = '';
 var pinCallback = null;
 var expandedDebtId = null;
-var debtScheduleOffset = 0;
+var debtScheduleYear = (new Date()).getFullYear();
+var debtScheduleMonth = (new Date()).getMonth()+1;
 var debtScheduleExpanded = false;
-var DEBT_SCHEDULE_MONTH_COUNT = 12; /* so tab thang hien thi trong lich tra no, cuon ngang */
+var DEBT_SCHEDULE_YEAR_MIN = 2020;
+var DEBT_SCHEDULE_YEAR_MAX = 2100;
 
 /* ===================== HELPERS ===================== */
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,9); }
@@ -481,17 +502,9 @@ function monthKeyOf(dateStr){ return dateStr.slice(0,7); }
 function currentMonthKey(){ return monthKeyOf(todayStr()); }
 function lastMonthKey(){ var d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return d.getFullYear() + '-' + pad2(d.getMonth()+1); }
 function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
-/* Chuyen chuoi ISO (yyyy-mm-dd) thanh doi tuong Date local (khong lech mui gio),
-   dung de so sanh chinh xac getMonth()/getFullYear() giua cac ky no va tab thang dang chon */
 function parseIsoDateLocal(iso){
   var p = String(iso).split('-');
   return new Date(toNumber(p[0]), toNumber(p[1])-1, toNumber(p[2]) || 1);
-}
-/* Sinh thong tin 1 tab thang, tinh tu thang hien tai + offset (0 = thang nay) */
-function getMonthTabInfo(offset){
-  var now = new Date();
-  var d = new Date(now.getFullYear(), now.getMonth()+offset, 1);
-  return { offset: offset, y: d.getFullYear(), m: d.getMonth()+1, label: 'Tháng ' + (d.getMonth()+1) + '/' + d.getFullYear() };
 }
 function formatMoney(n){ n = Math.round(toNumber(n)); return n.toLocaleString('vi-VN') + ' ₫'; }
 function formatDateDisplay(dateStr){ var p = dateStr.split('-'); if (p.length !== 3) return dateStr; return p[2] + '/' + p[1] + '/' + p[0]; }
@@ -507,7 +520,7 @@ function displayToIso(disp){
   if (d.length!==2 || m.length!==2 || y.length!==4) return null;
   var dn = toNumber(d), mn = toNumber(m), yn = toNumber(y);
   if (dn<1||dn>31||mn<1||mn>12||yn<2000||yn>2100) return null;
-  if (dn > daysInMonth(yn, mn)) return null; /* chan ngay khong ton tai thuc te, vd 31/04, 30/02 */
+  if (dn > daysInMonth(yn, mn)) return null;
   return y+'-'+m+'-'+d;
 }
 function formatDateMaskInput(el){
@@ -516,6 +529,117 @@ function formatDateMaskInput(el){
   if (digits.length>=5) out = digits.slice(0,2)+'/'+digits.slice(2,4)+'/'+digits.slice(4);
   else if (digits.length>=3) out = digits.slice(0,2)+'/'+digits.slice(2);
   el.value = out;
+}
+/* Dinh dang so tien co dau cham hang nghin ngay khi go, vd 100.000.000 */
+function formatMoneyDots(n){
+  n = Math.round(toNumber(n));
+  if (!n) return '';
+  return n.toLocaleString('vi-VN');
+}
+function attachMoneyInputFormatting(el){
+  if (!el) return;
+  el.addEventListener('input', function(){
+    var raw = this.value.replace(/\D/g,'');
+    var start = this.selectionStart;
+    var lenBefore = this.value.length;
+    this.value = raw ? Number(raw).toLocaleString('vi-VN') : '';
+    var lenAfter = this.value.length;
+    var diff = lenAfter - lenBefore;
+    var pos = Math.max(0, (start||lenAfter) + diff);
+    try{ this.setSelectionRange(pos, pos); }catch(e){}
+  });
+}
+function readMoneyInput(el){ return el ? toNumber(el.value.replace(/\D/g,'')) : 0; }
+
+/* ===================== CUSTOM SELECT (thay the select goc) ===================== */
+/* Mot panel dung chung duy nhat, gan vao <body>, khong tao/xoa DOM lien tuc
+   -> tranh ro ri bo nho khi render lai nhieu lan. Panel dinh vi fixed de
+   khong bi cat trong modal cuon (overflow:auto). */
+var cselOpenSelect = null;
+
+function closeCselPanel(){
+  var panel = document.getElementById('cselPanel');
+  if (panel){ panel.classList.remove('open'); panel.innerHTML = ''; }
+  if (cselOpenSelect && cselOpenSelect._cselTrigger){ cselOpenSelect._cselTrigger.classList.remove('open'); }
+  cselOpenSelect = null;
+}
+function cselTriggerLabel(select){
+  var opt = select.options[select.selectedIndex];
+  return opt ? opt.textContent : '';
+}
+function positionCselPanel(trigger, panel){
+  var r = trigger.getBoundingClientRect();
+  var vh = window.innerHeight;
+  var spaceBelow = vh - r.bottom;
+  var spaceAbove = r.top;
+  var maxH = 280;
+  panel.style.left = r.left + 'px';
+  panel.style.width = r.width + 'px';
+  if (spaceBelow >= 160 || spaceBelow >= spaceAbove){
+    panel.style.top = (r.bottom + 6) + 'px';
+    panel.style.bottom = 'auto';
+    panel.style.maxHeight = Math.max(120, Math.min(maxH, spaceBelow - 14)) + 'px';
+  } else {
+    panel.style.bottom = (vh - r.top + 6) + 'px';
+    panel.style.top = 'auto';
+    panel.style.maxHeight = Math.max(120, Math.min(maxH, spaceAbove - 14)) + 'px';
+  }
+}
+function openCselPanel(select){
+  var panel = document.getElementById('cselPanel');
+  if (!panel) return;
+  if (cselOpenSelect === select){ closeCselPanel(); return; }
+  closeCselPanel();
+  var html = '';
+  for (var i=0;i<select.options.length;i++){
+    var opt = select.options[i];
+    html += '<div class="csel-option'+(i===select.selectedIndex?' selected':'')+'" data-csel-idx="'+i+'"><span>'+escapeHtml(opt.textContent)+'</span><span class="csel-check">✓</span></div>';
+  }
+  panel.innerHTML = html;
+  positionCselPanel(select._cselTrigger, panel);
+  panel.classList.add('open');
+  select._cselTrigger.classList.add('open');
+  cselOpenSelect = select;
+  var selOpt = panel.querySelector('.csel-option.selected');
+  if (selOpt && selOpt.scrollIntoView) selOpt.scrollIntoView({ block: 'nearest' });
+}
+function chooseCselOption(idx){
+  if (!cselOpenSelect) return;
+  var select = cselOpenSelect;
+  closeCselPanel();
+  if (select.selectedIndex !== idx){
+    select.selectedIndex = idx;
+    select._cselTrigger.textContent = cselTriggerLabel(select);
+    var evt = document.createEvent('Event');
+    evt.initEvent('change', true, true);
+    select.dispatchEvent(evt);
+  }
+}
+/* Boc moi <select> chua duoc nang cap thanh trigger tuy chinh, giu nguyen
+   the <select> that (an di, khong xoa) de moi logic doc/ghi .value cu
+   van hoat dong binh thuong - chi thay lop giao dien ben tren. */
+function enhanceSelects(root){
+  root = root || document;
+  var selects = root.querySelectorAll('select:not([data-csel-done])');
+  for (var i=0;i<selects.length;i++){
+    (function(select){
+      select.setAttribute('data-csel-done','1');
+      select.classList.add('csel-native');
+      var wrap = document.createElement('span');
+      wrap.className = 'csel-wrap';
+      select.parentNode.insertBefore(wrap, select);
+      wrap.appendChild(select);
+      var trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'csel-trigger';
+      trigger.textContent = cselTriggerLabel(select);
+      if (select.hasAttribute('aria-label')) trigger.setAttribute('aria-label', select.getAttribute('aria-label'));
+      if (select.disabled) trigger.disabled = true;
+      wrap.appendChild(trigger);
+      select._cselTrigger = trigger;
+      trigger.addEventListener('click', function(e){ e.stopPropagation(); openCselPanel(select); });
+    })(selects[i]);
+  }
 }
 
 /* ===================== STORAGE ===================== */
@@ -572,10 +696,14 @@ function showToast(msg){
   showToast._t = setTimeout(function(){ el.classList.add('hidden'); }, 2200);
 }
 function openModal(html){
-  document.getElementById('modalBox').innerHTML = html;
+  closeCselPanel();
+  var box = document.getElementById('modalBox');
+  box.innerHTML = html;
   document.getElementById('modalOverlay').classList.remove('hidden');
+  enhanceSelects(box);
 }
 function closeModal(){
+  closeCselPanel();
   document.getElementById('modalOverlay').classList.add('hidden');
   document.getElementById('modalBox').innerHTML = '';
 }
@@ -655,6 +783,7 @@ function preventExternalNavigation(){
 
 /* ===================== NAVIGATION ===================== */
 function switchView(view){
+  closeCselPanel();
   currentView = view;
   var views = document.querySelectorAll('.view');
   for (var i=0;i<views.length;i++) views[i].classList.remove('active');
@@ -738,19 +867,16 @@ function getTotalRemainingDebt(){
   }
   return total;
 }
-/* Tong tien goc da vay, cong don tat ca cac khoan vay (khong phan biet da tat toan hay chua) */
 function getTotalBorrowedPrincipal(){
   var total = 0;
   for (var i=0;i<state.debts.length;i++){ total += toNumber(state.debts[i].totalAmount); }
   return total;
 }
-/* Tong tien phai tra = goc + lai, cong don tat ca cac khoan vay */
 function getTotalPayableAllDebts(){
   var total = 0;
   for (var i=0;i<state.debts.length;i++){ total += toNumber(state.debts[i].totalAmount) + toNumber(state.debts[i].totalInterest); }
   return total;
 }
-/* Tong so tien da tra thuc te (goc+lai) tinh theo paidHistory cua tung khoan vay */
 function getTotalPaidAllDebts(){
   var total = 0;
   for (var i=0;i<state.debts.length;i++){
@@ -759,11 +885,9 @@ function getTotalPaidAllDebts(){
   }
   return total;
 }
-/* Con lai chua tra = Tong phai tra (goc+lai) - Tong da tra */
 function getTotalRemainingPayableAllDebts(){
   return Math.max(getTotalPayableAllDebts() - getTotalPaidAllDebts(), 0);
 }
-/* So tien da tra trong THANG HIEN TAI, cong don tat ca cac khoan vay (dua tren paidAt) */
 function getPaidThisMonthAllDebts(){
   var total = 0;
   var mk = currentMonthKey();
@@ -775,12 +899,10 @@ function getPaidThisMonthAllDebts(){
   }
   return total;
 }
-function computeMonthSchedule(offset){
-  /* Xac dinh Thang/Nam muc tieu (tab dang chon) bang doi tuong Date, tinh tu thang hien tai + offset */
-  var tabInfo = getMonthTabInfo(offset);
-  var targetY = tabInfo.y;
-  var targetMonthIndex = tabInfo.m - 1; /* 0-based, dung de so sanh voi Date.getMonth() */
-  var mk = targetY + '-' + pad2(tabInfo.m);
+function computeMonthSchedule(year, month){
+  var targetY = year;
+  var targetMonthIndex = month - 1;
+  var mk = targetY + '-' + pad2(month);
   var items = [];
   for (var i=0;i<state.debts.length;i++){
     var d = state.debts[i];
@@ -788,8 +910,6 @@ function computeMonthSchedule(offset){
     var paidCount = d.paidHistory.length;
     var monthlyPrincipal = debtMonthlyPrincipal(d);
     var monthlyInterest = debtMonthlyInterest(d);
-    /* Quet toan bo cac ky no CHUA TRA da duoc sinh ra tu ngay thanh toan ky dau tien,
-       so sanh chinh xac Thang/Nam cua tung ky (qua doi tuong Date) voi Thang/Nam dang chon */
     for (var idx=paidCount; idx<d.months; idx++){
       var dueIso = getInstallmentDueDate(d, idx);
       var dueDateObj = parseIsoDateLocal(dueIso);
@@ -801,8 +921,9 @@ function computeMonthSchedule(offset){
   items.sort(function(a,b){ return a.day - b.day; });
   var total = 0;
   for (var k=0;k<items.length;k++) total += items[k].amount;
-  var avgPerDay = total / daysInMonth(targetY, tabInfo.m);
-  return { items: items, total: total, avgPerDay: avgPerDay, mk: mk, y: targetY, m: tabInfo.m, label: tabInfo.label };
+  var avgPerDay = total / daysInMonth(targetY, month);
+  var label = 'Tháng ' + month + '/' + targetY;
+  return { items: items, total: total, avgPerDay: avgPerDay, mk: mk, y: targetY, m: month, label: label };
 }
 function getBalance(){
   var thu = 0, chi = 0;
@@ -811,11 +932,6 @@ function getBalance(){
     if (tx.type === 'thu') thu += toNumber(tx.amount); else chi += toNumber(tx.amount);
   }
   return thu - chi;
-}
-function getTotalPaidDebt(){
-  var total = 0;
-  for (var i=0;i<state.transactions.length;i++){ if (state.transactions[i].category === 'Trả nợ') total += toNumber(state.transactions[i].amount); }
-  return total;
 }
 function getMonthTotals(mk){
   var thu = 0, chi = 0;
@@ -848,12 +964,12 @@ function getForecast(){
 
 /* ===================== DASHBOARD ===================== */
 function renderDashboard(){
+  closeCselPanel();
   var el = document.getElementById('view-dashboard');
   var mk = currentMonthKey();
   var balance = getBalance();
   var obligation = getDebtObligationThisMonth();
   var actuallySpendable = balance - obligation;
-  var paidDebt = getTotalPaidDebt();
   var monthTotals = getMonthTotals(mk);
   var forecast = getForecast();
   var isWarning = obligation > balance;
@@ -866,7 +982,6 @@ function renderDashboard(){
   html += '<div class="stat-box"><div class="label">Nghĩa vụ trả nợ tháng này</div><div class="value">'+formatMoney(obligation)+'</div></div>';
   html += '<div class="stat-box"><div class="label">Còn lại được tiêu</div><div class="value '+(actuallySpendable<0?'neg':'pos')+'">'+formatMoney(actuallySpendable)+'</div></div>';
   html += '<div class="stat-box full"><div class="label">Dự báo số dư cuối tháng</div><div class="value">'+formatMoney(forecast.forecastEnd)+'</div></div>';
-  html += '<div class="stat-box full"><div class="label">Tổng đã trả nợ (từ trước tới nay)</div><div class="value">'+formatMoney(paidDebt)+'</div></div>';
   html += '</div>';
   if (isWarning){
     html += '<div class="card" style="border-color:var(--danger);margin-top:14px;"><div style="color:var(--danger);font-weight:700;font-size:var(--fs-body);">⚠ Cảnh báo: Nghĩa vụ trả nợ tháng này lớn hơn số dư thực tế!</div></div>';
@@ -935,6 +1050,7 @@ function getFilteredTransactions(){
   return list;
 }
 function renderTransactionsView(){
+  closeCselPanel();
   var el = document.getElementById('view-transactions');
   var html = '';
   html += '<div class="tabs">';
@@ -955,6 +1071,7 @@ function renderTransactionsView(){
   html += '</div>';
   html += '<div id="txnListWrap"></div>';
   el.innerHTML = html;
+  enhanceSelects(el);
   renderTxnListInner();
 }
 function renderTxnListInner(){
@@ -995,13 +1112,14 @@ function openTransactionModal(editId){
   html += '<button type="button" data-type="thu" class="'+(type==='thu'?'active':'')+'">Thu</button>';
   html += '<button type="button" data-type="chi" class="'+(type==='chi'?'active':'')+'">Chi</button>';
   html += '</div>';
-  html += '<label>Số tiền</label><input type="number" id="fAmount" inputmode="numeric" placeholder="0" value="'+(editing?editing.amount:'')+'">';
+  html += '<label>Số tiền</label><input type="text" id="fAmount" inputmode="numeric" placeholder="0" value="'+(editing?formatMoneyDots(editing.amount):'')+'">';
   html += '<label>Danh mục</label><select id="fCategory">'+categoryOptions(type, editing?editing.category:null)+'</select>';
   html += '<div class="form-row"><div><label>Ngày</label><input type="text" id="fDate" inputmode="numeric" placeholder="DD/MM/YYYY" maxlength="10" value="'+(editing?isoToDisplay(editing.date):isoToDisplay(todayStr()))+'"></div>';
   html += '<div><label>Nguồn tiền</label><select id="fSource"><option value="cash"'+(editing&&editing.source==='cash'?' selected':'')+'>Tiền mặt</option><option value="bank"'+(editing&&editing.source==='bank'?' selected':'')+'>Thẻ ngân hàng</option></select></div></div>';
   html += '<label>Ghi chú</label><textarea id="fNote" placeholder="Không bắt buộc">'+(editing?escapeHtml(editing.note||''):'')+'</textarea>';
   html += '<button type="button" class="btn block" id="saveTxnBtn">'+(editing?'Lưu thay đổi':'Thêm giao dịch')+'</button>';
   openModal(html);
+  attachMoneyInputFormatting(document.getElementById('fAmount'));
 
   var seg = document.getElementById('typeSegment');
   seg.addEventListener('click', function(e){
@@ -1009,12 +1127,17 @@ function openTransactionModal(editId){
     if (!btn) return;
     var t = btn.getAttribute('data-type');
     seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b === btn); });
-    document.getElementById('fCategory').innerHTML = categoryOptions(t, null);
+    var catSelect = document.getElementById('fCategory');
+    catSelect.innerHTML = categoryOptions(t, null);
+    catSelect.removeAttribute('data-csel-done');
+    var oldWrap = catSelect.closest('.csel-wrap');
+    if (oldWrap){ oldWrap.parentNode.insertBefore(catSelect, oldWrap); oldWrap.remove(); }
+    enhanceSelects(document.getElementById('modalBox'));
   });
   document.getElementById('fDate').addEventListener('input', function(){ formatDateMaskInput(this); });
   document.getElementById('saveTxnBtn').addEventListener('click', function(){
     var t = seg.querySelector('button.active').getAttribute('data-type');
-    var amount = toNumber(document.getElementById('fAmount').value);
+    var amount = readMoneyInput(document.getElementById('fAmount'));
     var category = document.getElementById('fCategory').value;
     var date = displayToIso(document.getElementById('fDate').value);
     var source = document.getElementById('fSource').value;
@@ -1040,7 +1163,7 @@ function renderDebtOverviewCards(){
   var totalPayable = getTotalPayableAllDebts();
   var paidThisMonth = getPaidThisMonthAllDebts();
   var remainingPayable = getTotalRemainingPayableAllDebts();
-  var sched = computeMonthSchedule(debtScheduleOffset);
+  var sched = computeMonthSchedule(debtScheduleYear, debtScheduleMonth);
 
   var html = '';
   html += '<div class="stat-grid">';
@@ -1051,12 +1174,18 @@ function renderDebtOverviewCards(){
   html += '</div>';
 
   html += '<div class="card"><h3>Lịch trả nợ theo tháng</h3>';
-  html += '<div class="date-filter"><select id="debtMonthSelect">';
-  for (var i=0;i<DEBT_SCHEDULE_MONTH_COUNT;i++){
-    var tInfo = getMonthTabInfo(i);
-    html += '<option value="'+i+'"'+(debtScheduleOffset===i?' selected':'')+'>'+tInfo.label+'</option>';
+  html += '<div class="date-filter">';
+  html += '<select id="debtYearSelect" aria-label="Chọn năm">';
+  for (var yr=DEBT_SCHEDULE_YEAR_MIN; yr<=DEBT_SCHEDULE_YEAR_MAX; yr++){
+    html += '<option value="'+yr+'"'+(debtScheduleYear===yr?' selected':'')+'>Năm '+yr+'</option>';
   }
-  html += '</select></div>';
+  html += '</select>';
+  html += '<select id="debtMonthSelect" aria-label="Chọn tháng">';
+  for (var mo2=1; mo2<=12; mo2++){
+    html += '<option value="'+mo2+'"'+(debtScheduleMonth===mo2?' selected':'')+'>Tháng '+mo2+'</option>';
+  }
+  html += '</select>';
+  html += '</div>';
   html += '<div class="schedule-summary">';
   html += '<div class="col"><div class="label">Tổng nghĩa vụ '+sched.label+'</div><div class="val">'+formatMoney(sched.total)+'</div></div>';
   html += '<div class="col right"><div class="label">Cần gom / ngày</div><div class="val">'+formatMoney(sched.avgPerDay)+'</div></div>';
@@ -1079,6 +1208,7 @@ function renderDebtOverviewCards(){
 }
 
 function renderDebtsView(){
+  closeCselPanel();
   var el = document.getElementById('view-debts');
   var mk = currentMonthKey();
   var html = renderDebtOverviewCards();
@@ -1158,6 +1288,7 @@ function renderDebtsView(){
     html += '</div>';
   }
   el.innerHTML = html;
+  enhanceSelects(el);
 }
 
 function quickAmountChipsHtml(){
@@ -1186,7 +1317,7 @@ function openDebtModal(editId, prefill){
   html += '<label>Chủ nợ</label><select id="dPreset">'+presetInfo.html+'</select>';
   html += '<div id="dNameCustomWrap" class="'+(showCustom?'':'hidden')+'"><label>Tên chủ nợ (tùy chỉnh)</label><input type="text" id="dNameCustom" value="'+escapeAttr(customName)+'" placeholder="VD: Ngân hàng ABC"></div>';
 
-  html += '<label>Tổng tiền nợ gốc</label><input type="number" id="dTotal" value="'+(source?source.totalAmount:'')+'" placeholder="0">';
+  html += '<label>Tổng tiền nợ gốc</label><input type="text" id="dTotal" inputmode="numeric" value="'+(source?formatMoneyDots(source.totalAmount):'')+'" placeholder="0">';
   html += quickAmountChipsHtml();
 
   html += '<div class="form-row"><div><label>Số kỳ hạn</label><select id="dMonths">';
@@ -1194,10 +1325,10 @@ function openDebtModal(editId, prefill){
   html += '</select></div>';
   html += '<div><label>Lãi suất (%/tháng)</label><input type="number" step="0.01" id="dRate" value="'+(source?toNumber(source.interestRate):0)+'" placeholder="0"></div></div>';
 
-  html += '<label>Tổng tiền lãi cả kỳ</label><input type="number" id="dTotalInterest" value="'+(source?toNumber(source.totalInterest):0)+'" placeholder="VD: 1532984">';
+  html += '<label>Tổng tiền lãi cả kỳ</label><input type="text" id="dTotalInterest" inputmode="numeric" value="'+(source?formatMoneyDots(source.totalInterest):'')+'" placeholder="VD: 1.532.984">';
   html += '<div class="small-note">Lãi suất (%) chỉ hiển thị tham khảo trên thẻ, KHÔNG dùng để tính toán. Hệ thống chia đều: Gốc/tháng = Tổng nợ / Số kỳ; Lãi/tháng = Tổng tiền lãi / Số kỳ.</div>';
 
-  var defaultStartIso = '2026-' + todayStr().slice(5);
+  var defaultStartIso = todayStr();
   html += '<label>Ngày thanh toán hàng tháng (kỳ đầu tiên)</label><input type="date" id="dStartInput" value="'+(editing?editing.startDate:(prefill?prefill.startDate:defaultStartIso))+'">';
   html += '<div class="small-note">Ngày trong tháng của kỳ đầu tiên sẽ được dùng làm ngày đến hạn hàng tháng cho các kỳ tiếp theo. Chạm vào ô để mở lịch chọn ngày/tháng/năm.</div>';
 
@@ -1209,6 +1340,8 @@ function openDebtModal(editId, prefill){
 
   html += '<button type="button" class="btn block" id="saveDebtBtn">'+(editing?'Lưu thay đổi':'Thêm khoản nợ')+'</button>';
   openModal(html);
+  attachMoneyInputFormatting(document.getElementById('dTotal'));
+  attachMoneyInputFormatting(document.getElementById('dTotalInterest'));
 
   document.getElementById('dPreset').addEventListener('change', function(){
     var wrap = document.getElementById('dNameCustomWrap');
@@ -1217,15 +1350,15 @@ function openDebtModal(editId, prefill){
   document.getElementById('quickAmountChips').addEventListener('click', function(e){
     var btn = e.target.closest('[data-quick-amount]');
     if (!btn) return;
-    document.getElementById('dTotal').value = btn.getAttribute('data-quick-amount');
+    document.getElementById('dTotal').value = formatMoneyDots(btn.getAttribute('data-quick-amount'));
   });
   document.getElementById('saveDebtBtn').addEventListener('click', function(){
     var presetVal = document.getElementById('dPreset').value;
     var name = presetVal === 'Khác' ? document.getElementById('dNameCustom').value.trim() : presetVal;
-    var total = toNumber(document.getElementById('dTotal').value);
+    var total = readMoneyInput(document.getElementById('dTotal'));
     var months = toNumber(document.getElementById('dMonths').value);
     var rate = toNumber(document.getElementById('dRate').value);
-    var totalInterest = toNumber(document.getElementById('dTotalInterest').value);
+    var totalInterest = readMoneyInput(document.getElementById('dTotalInterest'));
     var startIso = document.getElementById('dStartInput').value;
     var paidCountInput = Math.max(0, Math.min(months, toNumber(document.getElementById('dPaidCount').value)));
 
@@ -1317,6 +1450,7 @@ function deleteDebtConfirm(id){
 
 /* ===================== BUDGET ===================== */
 function renderBudgetView(){
+  closeCselPanel();
   var el = document.getElementById('view-budget');
   var mk = currentMonthKey();
   var spentMap = getSpentByCategory(mk);
@@ -1330,7 +1464,7 @@ function renderBudgetView(){
     html += '<div class="budget-row" id="budgetRow-'+i+'">';
     html += '<div class="top"><span class="name"><span class="icon-box">'+(CATEGORY_ICONS[cat]||'')+'</span>'+cat+'</span><span class="amounts" id="budgetAmounts-'+i+'">'+formatMoney(spent)+' / '+(limit>0?formatMoney(limit):'Chưa đặt')+'</span></div>';
     html += '<div class="progress-track"><div class="progress-fill'+pctClass+'" id="budgetFill-'+i+'" style="width:'+(limit>0?pct:0)+'%"></div></div>';
-    html += '<input type="number" placeholder="Đặt hạn mức (đ)" data-budget-cat="'+cat+'" data-budget-idx="'+i+'" data-spent="'+spent+'" value="'+(limit>0?limit:'')+'">';
+    html += '<input type="text" inputmode="numeric" placeholder="Đặt hạn mức (đ)" data-budget-cat="'+cat+'" data-budget-idx="'+i+'" data-spent="'+spent+'" value="'+(limit>0?formatMoneyDots(limit):'')+'">';
     html += '</div>';
   }
   html += '</div>';
@@ -1347,6 +1481,8 @@ function renderBudgetView(){
   html += '<button type="button" class="btn block" id="addRecurringBtn">+ Thêm giao dịch định kỳ</button>';
   html += '</div>';
   el.innerHTML = html;
+  var moneyInputs = el.querySelectorAll('[data-budget-cat]');
+  for (var bi=0; bi<moneyInputs.length; bi++){ attachMoneyInputFormatting(moneyInputs[bi]); }
 }
 function updateBudgetRowUI(idx, cat, limit, spent){
   var amountsEl = document.getElementById('budgetAmounts-'+idx);
@@ -1368,24 +1504,30 @@ function openRecurringModal(editId){
   html += '<button type="button" data-type="thu" class="'+(type==='thu'?'active':'')+'">Thu</button>';
   html += '<button type="button" data-type="chi" class="'+(type==='chi'?'active':'')+'">Chi</button>';
   html += '</div>';
-  html += '<label>Số tiền</label><input type="number" id="rAmount" value="'+(editing?editing.amount:'')+'">';
+  html += '<label>Số tiền</label><input type="text" id="rAmount" inputmode="numeric" value="'+(editing?formatMoneyDots(editing.amount):'')+'">';
   html += '<label>Danh mục</label><select id="rCategory">'+categoryOptions(type, editing?editing.category:null)+'</select>';
   html += '<div class="form-row"><div><label>Ngày trong tháng (1-28)</label><input type="number" min="1" max="28" id="rDay" value="'+(editing?editing.dayOfMonth:1)+'"></div>';
   html += '<div><label>Nguồn tiền</label><select id="rSource"><option value="cash"'+(editing&&editing.source==='cash'?' selected':'')+'>Tiền mặt</option><option value="bank"'+(editing&&editing.source==='bank'?' selected':'')+'>Thẻ ngân hàng</option></select></div></div>';
   html += '<label>Ghi chú</label><input type="text" id="rNote" value="'+(editing?escapeAttr(editing.note||''):'')+'" placeholder="VD: Tiền nhà, Internet, Lương...">';
   html += '<button type="button" class="btn block" id="saveRecBtn">'+(editing?'Lưu thay đổi':'Thêm giao dịch định kỳ')+'</button>';
   openModal(html);
+  attachMoneyInputFormatting(document.getElementById('rAmount'));
   var seg = document.getElementById('typeSegmentR');
   seg.addEventListener('click', function(e){
     var btn = e.target.closest('button[data-type]');
     if (!btn) return;
     var t = btn.getAttribute('data-type');
     seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b === btn); });
-    document.getElementById('rCategory').innerHTML = categoryOptions(t, null);
+    var catSelect = document.getElementById('rCategory');
+    catSelect.innerHTML = categoryOptions(t, null);
+    catSelect.removeAttribute('data-csel-done');
+    var oldWrap = catSelect.closest('.csel-wrap');
+    if (oldWrap){ oldWrap.parentNode.insertBefore(catSelect, oldWrap); oldWrap.remove(); }
+    enhanceSelects(document.getElementById('modalBox'));
   });
   document.getElementById('saveRecBtn').addEventListener('click', function(){
     var t = seg.querySelector('button.active').getAttribute('data-type');
-    var amount = toNumber(document.getElementById('rAmount').value);
+    var amount = readMoneyInput(document.getElementById('rAmount'));
     var category = document.getElementById('rCategory').value;
     var day = Math.min(28, Math.max(1, toNumber(document.getElementById('rDay').value) || 1));
     var source = document.getElementById('rSource').value;
@@ -1419,6 +1561,7 @@ function applyRecurringTransactions(){
 
 /* ===================== SETTINGS ===================== */
 function renderSettingsView(){
+  closeCselPanel();
   var el = document.getElementById('view-settings');
   var s = state.settings;
   var html = '';
@@ -1574,6 +1717,27 @@ function attachGlobalEvents(){
     btn.addEventListener('click', function(){ switchView(this.getAttribute('data-view')); });
   });
 
+  /* Dong panel select tuy chinh khi click ra ngoai */
+  document.addEventListener('click', function(e){
+    if (cselOpenSelect){
+      var panel = document.getElementById('cselPanel');
+      var insidePanel = panel && panel.contains(e.target);
+      var isTrigger = e.target.closest('.csel-trigger');
+      if (!insidePanel && !isTrigger) closeCselPanel();
+    }
+  }, true);
+  var cselPanelEl = document.getElementById('cselPanel');
+  if (cselPanelEl){
+    cselPanelEl.addEventListener('click', function(e){
+      var opt = e.target.closest('.csel-option');
+      if (!opt) return;
+      chooseCselOption(toNumber(opt.getAttribute('data-csel-idx')));
+    });
+  }
+  /* Dong panel khi cuon (modal hoac trang) de tranh lech vi tri, tranh cat/tran ra ngoai */
+  window.addEventListener('scroll', function(){ if (cselOpenSelect) closeCselPanel(); }, true);
+  window.addEventListener('resize', function(){ if (cselOpenSelect) closeCselPanel(); });
+
   document.addEventListener('click', function(e){
     var editTxn = e.target.closest('[data-edit-txn]');
     if (editTxn){ openTransactionModal(editTxn.getAttribute('data-edit-txn')); return; }
@@ -1628,7 +1792,7 @@ function attachGlobalEvents(){
       var cat = e.target.getAttribute('data-budget-cat');
       var idx = e.target.getAttribute('data-budget-idx');
       var spent = toNumber(e.target.getAttribute('data-spent'));
-      var val = toNumber(e.target.value);
+      var val = readMoneyInput(e.target);
       if (val > 0) state.budgets[cat] = val; else delete state.budgets[cat];
       saveBudgets();
       updateBudgetRowUI(idx, cat, val, spent);
@@ -1637,7 +1801,8 @@ function attachGlobalEvents(){
   });
 
   document.addEventListener('change', function(e){
-    if (e.target.id === 'debtMonthSelect'){ debtScheduleOffset = toNumber(e.target.value); renderDebtsView(); return; }
+    if (e.target.id === 'debtYearSelect'){ debtScheduleYear = toNumber(e.target.value); renderDebtsView(); return; }
+    if (e.target.id === 'debtMonthSelect'){ debtScheduleMonth = toNumber(e.target.value); renderDebtsView(); return; }
     if (e.target.id === 'txnDateSelect'){ txnDateMode = e.target.value; renderTransactionsView(); return; }
     if (e.target.id === 'customFrom'){ txnCustomFrom = e.target.value; renderTxnListInner(); return; }
     if (e.target.id === 'customTo'){ txnCustomTo = e.target.value; renderTxnListInner(); return; }
