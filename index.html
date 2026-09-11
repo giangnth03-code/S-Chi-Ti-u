@@ -14,8 +14,8 @@
 
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Thu%20Chi%20and%20No%20Ca%20Nhan%22%2C%22short_name%22%3A%22ThuChi%22%2C%22start_url%22%3A%22.%22%2C%22scope%22%3A%22.%22%2C%22id%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%232451e8%22%7D">
 
-<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ctext%20x='96'%20y='130'%20font-size='110'%20font-family='Arial,%20sans-serif'%20fill='white'%20text-anchor='middle'%20font-weight='bold'%3ET%3C/text%3E%3C/svg%3E">
-<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ctext%20x='96'%20y='130'%20font-size='110'%20font-family='Arial,%20sans-serif'%20fill='white'%20text-anchor='middle'%20font-weight='bold'%3ET%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ccircle%20cx='96'%20cy='96'%20r='58'%20fill='white'/%3E%3Ctext%20x='96'%20y='108'%20font-size='68'%20font-family='Arial,%20sans-serif'%20fill='%232451e8'%20text-anchor='middle'%20font-weight='bold'%3E%E2%82%AB%3C/text%3E%3C/svg%3E">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ccircle%20cx='96'%20cy='96'%20r='58'%20fill='white'/%3E%3Ctext%20x='96'%20y='108'%20font-size='68'%20font-family='Arial,%20sans-serif'%20fill='%232451e8'%20text-anchor='middle'%20font-weight='bold'%3E%E2%82%AB%3C/text%3E%3C/svg%3E">
 <style>
 /* ============================= DESIGN TOKENS ============================= */
 :root{
@@ -467,8 +467,9 @@ var pinBuffer = '';
 var pinMode = 'unlock';
 var pinFirstEntry = '';
 var pinCallback = null;
-var expandedDebts = {};
+var expandedDebtId = null;
 var debtScheduleOffset = 0;
+var debtScheduleExpanded = false;
 var DEBT_SCHEDULE_MONTH_COUNT = 12; /* so tab thang hien thi trong lich tra no, cuon ngang */
 
 /* ===================== HELPERS ===================== */
@@ -591,10 +592,15 @@ function generateIcon(size){
   grad.addColorStop(0,'#4f7cff'); grad.addColorStop(1,'#1c3fc7');
   roundRectPath(ctx,0,0,size,size,size*0.22);
   ctx.fillStyle = grad; ctx.fill();
+  var cx = size/2, cy = size/2, r = size*0.3;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold ' + Math.floor(size*0.52) + 'px -apple-system, sans-serif';
+  ctx.fill();
+  ctx.fillStyle = '#2451e8';
+  ctx.font = 'bold ' + Math.floor(size*0.34) + 'px -apple-system, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('₫', size/2, size/2 + size*0.04);
+  ctx.fillText('₫', cx, cy + size*0.02);
   return canvas.toDataURL('image/png');
 }
 function roundRectPath(ctx,x,y,w,h,r){
@@ -1027,7 +1033,7 @@ function deleteTransactionConfirm(id){
 }
 
 /* ===================== DEBTS ===================== */
-function toggleDebtExpand(id){ expandedDebts[id] = !expandedDebts[id]; renderDebtsView(); }
+function toggleDebtExpand(id){ expandedDebtId = (expandedDebtId === id) ? null : id; renderDebtsView(); }
 
 function renderDebtOverviewCards(){
   var totalBorrowed = getTotalBorrowedPrincipal();
@@ -1038,10 +1044,10 @@ function renderDebtOverviewCards(){
 
   var html = '';
   html += '<div class="stat-grid">';
-  html += '<div class="stat-box full"><div class="label">Tổng tiền vay gốc (cộng dồn)</div><div class="value" style="font-size:var(--fs-hero);letter-spacing:-.5px;">'+formatMoney(totalBorrowed)+'</div></div>';
+  html += '<div class="stat-box full"><div class="label">Còn lại chưa trả</div><div class="value neg" style="font-size:var(--fs-hero);letter-spacing:-.5px;">'+formatMoney(remainingPayable)+'</div></div>';
   html += '<div class="stat-box"><div class="label">Tổng phải trả (gốc + lãi)</div><div class="value">'+formatMoney(totalPayable)+'</div></div>';
   html += '<div class="stat-box"><div class="label">Đã trả tháng này</div><div class="value pos">'+formatMoney(paidThisMonth)+'</div></div>';
-  html += '<div class="stat-box full"><div class="label">Còn lại chưa trả</div><div class="value neg">'+formatMoney(remainingPayable)+'</div></div>';
+  html += '<div class="stat-box full"><div class="label">Tổng tiền vay gốc (cộng dồn)</div><div class="value">'+formatMoney(totalBorrowed)+'</div></div>';
   html += '</div>';
 
   html += '<div class="card"><h3>Lịch trả nợ theo tháng</h3>';
@@ -1055,16 +1061,20 @@ function renderDebtOverviewCards(){
   html += '<div class="col"><div class="label">Tổng nghĩa vụ '+sched.label+'</div><div class="val">'+formatMoney(sched.total)+'</div></div>';
   html += '<div class="col right"><div class="label">Cần gom / ngày</div><div class="val">'+formatMoney(sched.avgPerDay)+'</div></div>';
   html += '</div>';
-  html += '<div class="schedule-list">';
-  if (sched.items.length === 0){
-    html += '<div class="empty-state"><span class="icon-box">✅</span>Không có kỳ nợ nào đến hạn trong tháng này</div>';
-  } else {
-    for (var k=0;k<sched.items.length;k++){
-      var it = sched.items[k];
-      html += '<div class="schedule-row"><div class="day-badge">'+pad2(it.day)+'</div><div class="info"><div class="t">'+escapeHtml(it.name)+'</div><div class="m">'+formatDateDisplay(it.date)+'</div></div><div class="amt">'+formatMoney(it.amount)+'</div></div>';
+  html += '<button type="button" class="btn secondary block" id="toggleScheduleDetailBtn">'+(debtScheduleExpanded?'Thu gọn chi tiết':'Xem chi tiết lịch trả')+'</button>';
+  if (debtScheduleExpanded){
+    html += '<div class="schedule-list">';
+    if (sched.items.length === 0){
+      html += '<div class="empty-state"><span class="icon-box">✅</span>Không có kỳ nợ nào đến hạn trong tháng này</div>';
+    } else {
+      for (var k=0;k<sched.items.length;k++){
+        var it = sched.items[k];
+        html += '<div class="schedule-row"><div class="day-badge">'+pad2(it.day)+'</div><div class="info"><div class="t">'+escapeHtml(it.name)+'</div><div class="m">'+formatDateDisplay(it.date)+'</div></div><div class="amt">'+formatMoney(it.amount)+'</div></div>';
+      }
     }
+    html += '</div>';
   }
-  html += '</div></div>';
+  html += '</div>';
   return html;
 }
 
@@ -1085,7 +1095,10 @@ function renderDebtsView(){
     var pct = Math.min(100, Math.round((paidCount / months) * 100));
     var paidThisMonth = paidCount > 0 && d.paidHistory[paidCount-1].month === mk;
     var isDone = d.status === 'done' || debtIsFullyPaid(d);
-    var expanded = !!expandedDebts[d.id];
+    var expanded = (expandedDebtId === d.id);
+    var paidAmountThisDebt = 0;
+    for (var ph0=0; ph0<d.paidHistory.length; ph0++) paidAmountThisDebt += toNumber(d.paidHistory[ph0].amount);
+    var totalPayableThisDebt = toNumber(d.totalAmount) + toNumber(d.totalInterest);
 
     html += '<div class="debt-card'+(expanded?' expanded':'')+'">';
     html += '<div class="debt-card-header" data-toggle-debt="'+d.id+'">';
@@ -1095,7 +1108,7 @@ function renderDebtsView(){
     else if (paidThisMonth) html += '<span class="status-badge">Đã trả tháng này</span>';
     else html += '<span class="next-amount">'+formatMoney(next.total)+'</span>';
     html += '</div>';
-    html += '<div class="dch-bottom"><div class="progress-track"><div class="progress-fill'+(pct>=100?' danger':pct>=80?' warn':'')+'" style="width:'+pct+'%"></div></div><span class="progress-label">'+paidCount+'/'+months+' kỳ</span></div>';
+    html += '<div class="dch-bottom"><div class="progress-track"><div class="progress-fill'+(pct>=100?' danger':pct>=80?' warn':'')+'" style="width:'+pct+'%"></div></div><span class="progress-label">'+formatMoney(paidAmountThisDebt)+' / '+formatMoney(totalPayableThisDebt)+' • '+paidCount+'/'+months+' kỳ</span></div>';
     html += '</div>';
     html += '<div class="chevron">⌄</div>';
     html += '</div>';
@@ -1184,10 +1197,14 @@ function openDebtModal(editId, prefill){
   html += '<label>Tổng tiền lãi cả kỳ</label><input type="number" id="dTotalInterest" value="'+(source?toNumber(source.totalInterest):0)+'" placeholder="VD: 1532984">';
   html += '<div class="small-note">Lãi suất (%) chỉ hiển thị tham khảo trên thẻ, KHÔNG dùng để tính toán. Hệ thống chia đều: Gốc/tháng = Tổng nợ / Số kỳ; Lãi/tháng = Tổng tiền lãi / Số kỳ.</div>';
 
-  html += '<label>Ngày thanh toán hàng tháng (kỳ đầu tiên)</label><input type="text" id="dStartDisplay" inputmode="numeric" placeholder="DD/MM/YYYY" maxlength="10" value="'+(editing?isoToDisplay(editing.startDate):(prefill?isoToDisplay(prefill.startDate):isoToDisplay(todayStr())))+'">';
-  html += '<div class="small-note">Ngày trong tháng của kỳ đầu tiên sẽ được dùng làm ngày đến hạn hàng tháng cho các kỳ tiếp theo.</div>';
+  var defaultStartIso = '2026-' + todayStr().slice(5);
+  html += '<label>Ngày thanh toán hàng tháng (kỳ đầu tiên)</label><input type="date" id="dStartInput" value="'+(editing?editing.startDate:(prefill?prefill.startDate:defaultStartIso))+'">';
+  html += '<div class="small-note">Ngày trong tháng của kỳ đầu tiên sẽ được dùng làm ngày đến hạn hàng tháng cho các kỳ tiếp theo. Chạm vào ô để mở lịch chọn ngày/tháng/năm.</div>';
 
-  html += '<label>Số kỳ đã thanh toán (nếu vay từ trước)</label><input type="number" min="0" id="dPaidCount" value="'+(editing?editing.paidHistory.length:0)+'" placeholder="0">';
+  var paidCountSelected = editing ? editing.paidHistory.length : 0;
+  html += '<label>Số kỳ đã thanh toán (nếu vay từ trước)</label><select id="dPaidCount">';
+  for (var pc=0; pc<=12; pc++){ html += '<option value="'+pc+'"'+(pc===paidCountSelected?' selected':'')+'>'+pc+' kỳ</option>'; }
+  html += '</select>';
   html += '<div class="small-note">Tự khai để đồng bộ với thực tế. Hệ thống tự tính lại gốc/lãi từng kỳ đã trả theo số này, KHÔNG tạo giao dịch chi tiêu tương ứng.</div>';
 
   html += '<button type="button" class="btn block" id="saveDebtBtn">'+(editing?'Lưu thay đổi':'Thêm khoản nợ')+'</button>';
@@ -1202,9 +1219,6 @@ function openDebtModal(editId, prefill){
     if (!btn) return;
     document.getElementById('dTotal').value = btn.getAttribute('data-quick-amount');
   });
-  var startInput = document.getElementById('dStartDisplay');
-  startInput.addEventListener('input', function(){ formatDateMaskInput(this); });
-
   document.getElementById('saveDebtBtn').addEventListener('click', function(){
     var presetVal = document.getElementById('dPreset').value;
     var name = presetVal === 'Khác' ? document.getElementById('dNameCustom').value.trim() : presetVal;
@@ -1212,12 +1226,12 @@ function openDebtModal(editId, prefill){
     var months = toNumber(document.getElementById('dMonths').value);
     var rate = toNumber(document.getElementById('dRate').value);
     var totalInterest = toNumber(document.getElementById('dTotalInterest').value);
-    var startIso = displayToIso(document.getElementById('dStartDisplay').value);
+    var startIso = document.getElementById('dStartInput').value;
     var paidCountInput = Math.max(0, Math.min(months, toNumber(document.getElementById('dPaidCount').value)));
 
     if (!name){ showToast('Vui lòng nhập tên chủ nợ'); return; }
     if (!total || total <= 0 || !months || months <= 0){ showToast('Vui lòng nhập đầy đủ thông tin hợp lệ'); return; }
-    if (!startIso){ showToast('Ngày thanh toán không hợp lệ (định dạng DD/MM/YYYY)'); return; }
+    if (!startIso){ showToast('Vui lòng chọn ngày thanh toán'); return; }
 
     var paymentDay = toNumber(startIso.split('-')[2]);
 
@@ -1242,7 +1256,10 @@ function duplicateDebt(id){
   var d = null;
   for (var i=0;i<state.debts.length;i++){ if (state.debts[i].id === id){ d = state.debts[i]; break; } }
   if (!d) return;
-  openDebtModal(null, { name: d.name, totalAmount: d.totalAmount, months: d.months, interestRate: d.interestRate, totalInterest: d.totalInterest, startDate: todayStr(), paymentDay: toNumber(todayStr().split('-')[2]) });
+  var copy = JSON.parse(JSON.stringify(d));
+  copy.id = uid();
+  state.debts.push(copy);
+  saveDebts(); renderAll(); showToast('Đã nhân bản khoản nợ');
 }
 function payDebtMonth(id){
   var d = null;
@@ -1562,6 +1579,8 @@ function attachGlobalEvents(){
     if (editTxn){ openTransactionModal(editTxn.getAttribute('data-edit-txn')); return; }
     var delTxn = e.target.closest('[data-del-txn]');
     if (delTxn){ deleteTransactionConfirm(delTxn.getAttribute('data-del-txn')); return; }
+
+    if (e.target.closest('#toggleScheduleDetailBtn')){ debtScheduleExpanded = !debtScheduleExpanded; renderDebtsView(); return; }
 
     var toggleDebt = e.target.closest('[data-toggle-debt]');
     if (toggleDebt){ toggleDebtExpand(toggleDebt.getAttribute('data-toggle-debt')); return; }
