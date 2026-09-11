@@ -1092,7 +1092,7 @@ function openDebtModal(editId){
   html += '<label>Tên chủ nợ</label><input type="text" id="dName" value="'+(editing?escapeAttr(editing.name):'')+'" placeholder="VD: Ngân hàng ABC">';
   html += '<label>Tổng nợ ban đầu</label><input type="number" id="dTotal" value="'+(editing?editing.totalAmount:'')+'">';
   html += '<div class="form-row"><div><label>Số tháng kỳ hạn</label><input type="number" id="dMonths" value="'+(editing?editing.months:'')+'"></div>';
-  html += '<div><label>Lãi suất (%/tháng) — chỉ để ghi chú</label><input type="number" step="0.01" id="dRate" value="'+(editing?toNumber(editing.interestRate):0)+'" placeholder="0"></div></div>';
+  html += '<div><label>Lãi suất (%/tháng) </label><input type="number" step="0.01" id="dRate" value="'+(editing?toNumber(editing.interestRate):0)+'" placeholder="0"></div></div>';
   html += '<label>Tổng tiền lãi cả kỳ hạn</label><input type="number" id="dTotalInterest" value="'+(editing?toNumber(editing.totalInterest):0)+'" placeholder="VD: 1532984">';
   html += '<div class="small-note">Lãi suất (%) chỉ hiển thị tham khảo trên thẻ, KHÔNG dùng để tính toán. Hệ thống chia đều: Gốc/tháng = Tổng nợ / Số tháng; Lãi/tháng = Tổng tiền lãi / Số tháng.</div>';
   html += '<label>Ngày bắt đầu</label><input type="date" id="dStart" value="'+(editing?editing.startDate:todayStr())+'">';
