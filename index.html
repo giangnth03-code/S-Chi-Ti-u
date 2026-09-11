@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Thu Chi & Nợ Cá Nhân</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -152,9 +152,6 @@ main{flex:1;padding:16px 16px 24px;}
   background:var(--bg-elevated);color:var(--text-dim);font-size:13px;font-weight:700;white-space:nowrap;
 }
 .tabs button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
-/* Tabs thang (nhieu tab, cuon ngang): khong ep co gian, giu do rong tu nhien theo noi dung */
-.tabs.month-tabs button{flex:0 0 auto;padding:0 16px;}
-
 .segmented{display:flex;border-radius:var(--radius-control);overflow:hidden;border:1px solid var(--border);}
 .segmented button{flex:1;height:var(--control-h);background:var(--bg-soft);border:none;color:var(--text-dim);font-weight:700;font-size:14px;}
 .segmented button.active{background:var(--primary);color:#fff;}
@@ -168,10 +165,18 @@ input[type="text"], input[type="number"], input[type="date"], input[type="tel"],
   transition:border-color .15s var(--ease);
 }
 input:focus, select:focus, textarea:focus{outline:none;border-color:var(--primary);}
+select{
+  -webkit-appearance:none;-moz-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;background-size:14px;
+  padding-right:38px;font-weight:700;cursor:pointer;
+}
+select:active{background-color:var(--primary-soft);border-color:var(--primary);}
 textarea{height:auto;padding:11px 13px;resize:vertical;min-height:64px;}
 label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0 6px;font-weight:600;}
-.form-row{display:flex;gap:10px;}
-.form-row > div{flex:1;}
+.form-row{display:flex;gap:12px;}
+.form-row > div{flex:1;min-width:0;}
+.form-row input, .form-row select{min-width:0;}
 
 .date-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .date-filter select{flex:1;min-width:120px;}
@@ -311,7 +316,8 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 .modal-overlay{position:fixed;inset:0;background:rgba(10,14,25,0.55);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
 .modal-overlay.hidden{display:none;}
 .modal-box{
-  background:var(--bg-elevated);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+  background:var(--bg-elevated);width:100%;max-width:520px;max-height:88vh;max-height:88dvh;overflow-y:auto;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   border-radius:22px 22px 0 0;padding:16px 18px calc(24px + env(safe-area-inset-bottom));
   animation:slideup .25s var(--ease);
 }
@@ -941,9 +947,15 @@ function renderTransactionsView(){
   html += '<div class="custom-range'+(txnDateMode==='custom'?' show':'')+'" id="customRangeRow">';
   html += '<input type="date" id="customFrom" value="'+txnCustomFrom+'"><input type="date" id="customTo" value="'+txnCustomTo+'">';
   html += '</div>';
-
+  html += '<div id="txnListWrap"></div>';
+  el.innerHTML = html;
+  renderTxnListInner();
+}
+function renderTxnListInner(){
+  var wrap = document.getElementById('txnListWrap');
+  if (!wrap) return;
   var list = getFilteredTransactions();
-  html += '<div class="card">';
+  var html = '<div class="card">';
   if (list.length === 0){ html += '<div class="empty-state"><span class="icon-box">🧾</span>Không có giao dịch nào</div>'; }
   else {
     for (var i=0;i<list.length;i++){
@@ -960,7 +972,7 @@ function renderTransactionsView(){
     }
   }
   html += '</div>';
-  el.innerHTML = html;
+  wrap.innerHTML = html;
 }
 function categoryOptions(type, selected){
   var arr = type === 'thu' ? CATEGORIES_THU : CATEGORIES_CHI;
@@ -979,7 +991,7 @@ function openTransactionModal(editId){
   html += '</div>';
   html += '<label>Số tiền</label><input type="number" id="fAmount" inputmode="numeric" placeholder="0" value="'+(editing?editing.amount:'')+'">';
   html += '<label>Danh mục</label><select id="fCategory">'+categoryOptions(type, editing?editing.category:null)+'</select>';
-  html += '<div class="form-row"><div><label>Ngày</label><input type="date" id="fDate" value="'+(editing?editing.date:todayStr())+'"></div>';
+  html += '<div class="form-row"><div><label>Ngày</label><input type="text" id="fDate" inputmode="numeric" placeholder="DD/MM/YYYY" maxlength="10" value="'+(editing?isoToDisplay(editing.date):isoToDisplay(todayStr()))+'"></div>';
   html += '<div><label>Nguồn tiền</label><select id="fSource"><option value="cash"'+(editing&&editing.source==='cash'?' selected':'')+'>Tiền mặt</option><option value="bank"'+(editing&&editing.source==='bank'?' selected':'')+'>Thẻ ngân hàng</option></select></div></div>';
   html += '<label>Ghi chú</label><textarea id="fNote" placeholder="Không bắt buộc">'+(editing?escapeHtml(editing.note||''):'')+'</textarea>';
   html += '<button type="button" class="btn block" id="saveTxnBtn">'+(editing?'Lưu thay đổi':'Thêm giao dịch')+'</button>';
@@ -993,14 +1005,16 @@ function openTransactionModal(editId){
     seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b === btn); });
     document.getElementById('fCategory').innerHTML = categoryOptions(t, null);
   });
+  document.getElementById('fDate').addEventListener('input', function(){ formatDateMaskInput(this); });
   document.getElementById('saveTxnBtn').addEventListener('click', function(){
     var t = seg.querySelector('button.active').getAttribute('data-type');
     var amount = toNumber(document.getElementById('fAmount').value);
     var category = document.getElementById('fCategory').value;
-    var date = document.getElementById('fDate').value || todayStr();
+    var date = displayToIso(document.getElementById('fDate').value);
     var source = document.getElementById('fSource').value;
     var note = document.getElementById('fNote').value;
     if (!amount || amount <= 0){ showToast('Vui lòng nhập số tiền hợp lệ'); return; }
+    if (!date){ showToast('Ngày không hợp lệ (định dạng DD/MM/YYYY)'); return; }
     if (editing){ editing.type = t; editing.amount = amount; editing.category = category; editing.date = date; editing.source = source; editing.note = note; }
     else { state.transactions.push({ id: uid(), type: t, amount: amount, category: category, date: date, source: source, note: note }); }
     saveTransactions(); closeModal(); renderAll(); showToast('Đã lưu giao dịch');
@@ -1031,12 +1045,12 @@ function renderDebtOverviewCards(){
   html += '</div>';
 
   html += '<div class="card"><h3>Lịch trả nợ theo tháng</h3>';
-  html += '<div class="tabs month-tabs" id="debtMonthTabs">';
+  html += '<div class="date-filter"><select id="debtMonthSelect">';
   for (var i=0;i<DEBT_SCHEDULE_MONTH_COUNT;i++){
     var tInfo = getMonthTabInfo(i);
-    html += '<button type="button" data-offset="'+i+'" class="'+(debtScheduleOffset===i?'active':'')+'">'+tInfo.label+'</button>';
+    html += '<option value="'+i+'"'+(debtScheduleOffset===i?' selected':'')+'>'+tInfo.label+'</option>';
   }
-  html += '</div>';
+  html += '</select></div>';
   html += '<div class="schedule-summary">';
   html += '<div class="col"><div class="label">Tổng nghĩa vụ '+sched.label+'</div><div class="val">'+formatMoney(sched.total)+'</div></div>';
   html += '<div class="col right"><div class="label">Cần gom / ngày</div><div class="val">'+formatMoney(sched.avgPerDay)+'</div></div>';
@@ -1566,9 +1580,6 @@ function attachGlobalEvents(){
     var delDebt = e.target.closest('[data-del-debt]');
     if (delDebt){ deleteDebtConfirm(delDebt.getAttribute('data-del-debt')); return; }
 
-    var monthTab = e.target.closest('#debtMonthTabs button[data-offset]');
-    if (monthTab){ debtScheduleOffset = toNumber(monthTab.getAttribute('data-offset')); renderDebtsView(); return; }
-
     var editRec = e.target.closest('[data-edit-rec]');
     if (editRec){ openRecurringModal(editRec.getAttribute('data-edit-rec')); return; }
     var delRec = e.target.closest('[data-del-rec]');
@@ -1593,7 +1604,7 @@ function attachGlobalEvents(){
   });
 
   document.addEventListener('input', function(e){
-    if (e.target.id === 'txnSearchInput'){ txnSearch = e.target.value; renderTransactionsView(); return; }
+    if (e.target.id === 'txnSearchInput'){ txnSearch = e.target.value; renderTxnListInner(); return; }
     if (e.target.matches('[data-budget-cat]')){
       var cat = e.target.getAttribute('data-budget-cat');
       var idx = e.target.getAttribute('data-budget-idx');
@@ -1607,9 +1618,10 @@ function attachGlobalEvents(){
   });
 
   document.addEventListener('change', function(e){
+    if (e.target.id === 'debtMonthSelect'){ debtScheduleOffset = toNumber(e.target.value); renderDebtsView(); return; }
     if (e.target.id === 'txnDateSelect'){ txnDateMode = e.target.value; renderTransactionsView(); return; }
-    if (e.target.id === 'customFrom'){ txnCustomFrom = e.target.value; renderTransactionsView(); return; }
-    if (e.target.id === 'customTo'){ txnCustomTo = e.target.value; renderTransactionsView(); return; }
+    if (e.target.id === 'customFrom'){ txnCustomFrom = e.target.value; renderTxnListInner(); return; }
+    if (e.target.id === 'customTo'){ txnCustomTo = e.target.value; renderTxnListInner(); return; }
     if (e.target.id === 'pinToggle'){
       if (e.target.checked){ showLockScreen('setNew', null); }
       else { showLockScreen('disableVerify', null); }
