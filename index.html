@@ -482,6 +482,7 @@ function loadState(){
     d2.totalAmount = toNumber(d2.totalAmount);
     d2.months = toNumber(d2.months);
     d2.interestRate = toNumber(d2.interestRate || 0);
+    d2.totalInterest = toNumber(d2.totalInterest || 0);
 
     if (!Array.isArray(d2.paidHistory)){
       /* chuyen du lieu no cu (history/monthlyAmount) sang dinh dang moi co lai suat */
@@ -657,10 +658,13 @@ function debtRemaining(d){
   for (var i=0;i<d.paidHistory.length;i++) paidPrincipal += toNumber(d.paidHistory[i].principal);
   return Math.max(toNumber(d.totalAmount) - paidPrincipal, 0);
 }
+function debtMonthlyInterest(d){
+  return toNumber(d.totalInterest) / toNumber(d.months);
+}
 function debtNextInstallment(d){
   var remaining = debtRemaining(d);
   var principal = Math.min(debtMonthlyPrincipal(d), remaining);
-  var interest = remaining * (toNumber(d.interestRate) / 100);
+  var interest = debtMonthlyInterest(d);
   return { principal: principal, interest: interest, total: principal + interest, remainingBefore: remaining };
 }
 function debtIsFullyPaid(d){
@@ -670,16 +674,17 @@ function addMonthsToYearMonth(y, m, add){
   var total = (y*12 + (m-1)) + add;
   return { y: Math.floor(total/12), m: (total%12)+1 };
 }
-function buildPaidHistory(total, months, rate, startDate, count){
+function buildPaidHistory(total, months, totalInterest, startDate, count){
   var arr = [];
   var remaining = toNumber(total);
   var monthlyPrincipal = remaining && months ? toNumber(total)/toNumber(months) : 0;
+  var monthlyInterest = months ? toNumber(totalInterest)/toNumber(months) : 0;
   var parts = (startDate||todayStr()).split('-');
   var y = toNumber(parts[0]) || (new Date()).getFullYear();
   var m = toNumber(parts[1]) || 1;
   for (var i=0;i<count;i++){
     var principal = Math.min(monthlyPrincipal, remaining);
-    var interest = remaining * (toNumber(rate)/100);
+    var interest = monthlyInterest;
     var ym = addMonthsToYearMonth(y, m, i);
     var mk = ym.y + '-' + pad2(ym.m);
     arr.push({ month: mk, principal: principal, interest: interest, amount: principal+interest, paidAt: mk+'-01' });
@@ -984,7 +989,8 @@ function renderDebtsView(){
     else if (paidThisMonth) html += '<span class="status-badge">Đã trả tháng này</span>';
     html += '</div>';
     html += '<div class="row"><span>Tổng nợ</span><b>'+formatMoney(d.totalAmount)+'</b></div>';
-    html += '<div class="row"><span>Lãi suất</span><b>'+(toNumber(d.interestRate)>0 ? toNumber(d.interestRate)+'%/tháng' : 'Không lãi (0%)')+'</b></div>';
+    html += '<div class="row"><span>Lãi suất (tham khảo)</span><b>'+(toNumber(d.interestRate)>0 ? toNumber(d.interestRate)+'%/tháng' : 'Chưa ghi')+'</b></div>';
+    html += '<div class="row"><span>Tổng tiền lãi cả kỳ</span><b>'+formatMoney(d.totalInterest)+'</b></div>';
     html += '<div class="row"><span>Gốc/tháng</span><b>'+formatMoney(debtMonthlyPrincipal(d))+'</b></div>';
     if (!isDone){
       html += '<div class="row"><span>Lãi kỳ tới</span><b>'+formatMoney(next.interest)+'</b></div>';
@@ -1028,7 +1034,9 @@ function openDebtModal(editId){
   html += '<label>Tên chủ nợ</label><input type="text" id="dName" value="'+(editing?escapeAttr(editing.name):'')+'" placeholder="VD: Ngân hàng ABC">';
   html += '<label>Tổng nợ ban đầu</label><input type="number" id="dTotal" value="'+(editing?editing.totalAmount:'')+'">';
   html += '<div class="form-row"><div><label>Số tháng kỳ hạn</label><input type="number" id="dMonths" value="'+(editing?editing.months:'')+'"></div>';
-  html += '<div><label>Lãi suất (%/tháng)</label><input type="number" step="0.01" id="dRate" value="'+(editing?toNumber(editing.interestRate):0)+'" placeholder="0"></div></div>';
+  html += '<div><label>Lãi suất (%/tháng) — chỉ để ghi chú</label><input type="number" step="0.01" id="dRate" value="'+(editing?toNumber(editing.interestRate):0)+'" placeholder="0"></div></div>';
+  html += '<label>Tổng tiền lãi cả kỳ hạn</label><input type="number" id="dTotalInterest" value="'+(editing?toNumber(editing.totalInterest):0)+'" placeholder="VD: 1532984">';
+  html += '<div class="small-note">Lãi suất (%) chỉ hiển thị tham khảo trên thẻ, KHÔNG dùng để tính toán. Hệ thống chia đều: Gốc/tháng = Tổng nợ / Số tháng; Lãi/tháng = Tổng tiền lãi / Số tháng.</div>';
   html += '<label>Ngày bắt đầu</label><input type="date" id="dStart" value="'+(editing?editing.startDate:todayStr())+'">';
   html += '<label>Số kỳ đã thanh toán (nếu vay từ trước, tự chỉnh cho khớp thực tế)</label><input type="number" min="0" id="dPaidCount" value="'+(editing?editing.paidHistory.length:0)+'" placeholder="0">';
   html += '<div class="small-note">Đây là con số bạn tự khai để đồng bộ với thực tế (VD: vay 12 kỳ, đã trả 6 kỳ bên ngoài trước khi dùng app thì nhập 6). Hệ thống sẽ tự tính lại gốc/lãi từng kỳ đã trả theo số này, KHÔNG tạo giao dịch chi tiêu tương ứng.</div>';
@@ -1039,6 +1047,7 @@ function openDebtModal(editId){
     var total = toNumber(document.getElementById('dTotal').value);
     var months = toNumber(document.getElementById('dMonths').value);
     var rate = toNumber(document.getElementById('dRate').value);
+    var totalInterest = toNumber(document.getElementById('dTotalInterest').value);
     var start = document.getElementById('dStart').value || todayStr();
     var paidCountInput = Math.max(0, Math.min(months, toNumber(document.getElementById('dPaidCount').value)));
     if (!name || !total || total <= 0 || !months || months <= 0){ showToast('Vui lòng nhập đầy đủ thông tin hợp lệ'); return; }
@@ -1047,13 +1056,14 @@ function openDebtModal(editId){
       editing.totalAmount = total;
       editing.months = months;
       editing.interestRate = rate;
+      editing.totalInterest = totalInterest;
       editing.startDate = start;
-      editing.paidHistory = buildPaidHistory(total, months, rate, start, paidCountInput);
+      editing.paidHistory = buildPaidHistory(total, months, totalInterest, start, paidCountInput);
       editing.status = debtIsFullyPaid(editing) ? 'done' : 'active';
     } else {
       var newDebt = {
-        id: uid(), name: name, totalAmount: total, months: months, interestRate: rate,
-        startDate: start, status: 'active', paidHistory: buildPaidHistory(total, months, rate, start, paidCountInput)
+        id: uid(), name: name, totalAmount: total, months: months, interestRate: rate, totalInterest: totalInterest,
+        startDate: start, status: 'active', paidHistory: buildPaidHistory(total, months, totalInterest, start, paidCountInput)
       };
       if (debtIsFullyPaid(newDebt)) newDebt.status = 'done';
       state.debts.push(newDebt);
@@ -1355,6 +1365,7 @@ function importJSONFile(file){
         state.debts[j].totalAmount = toNumber(state.debts[j].totalAmount);
         state.debts[j].months = toNumber(state.debts[j].months);
         state.debts[j].interestRate = toNumber(state.debts[j].interestRate || 0);
+        state.debts[j].totalInterest = toNumber(state.debts[j].totalInterest || 0);
         if (!Array.isArray(state.debts[j].paidHistory)) state.debts[j].paidHistory = [];
       }
       saveAll();
