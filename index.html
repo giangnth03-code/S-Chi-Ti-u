@@ -2,16 +2,24 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Thu Chi & Nợ Cá Nhân</title>
+
+<!-- ===== iOS Standalone PWA Meta Tags ===== -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Thu Chi">
 <meta name="theme-color" content="#2451e8">
-<link rel="manifest" id="manifestLink" href="">
-<link rel="apple-touch-icon" id="appleTouchIcon" href="">
-<link rel="icon" id="favicon" href="">
+<meta name="format-detection" content="telephone=no">
+
+<!-- ===== Web App Manifest nhúng tĩnh bằng Data URI (không phụ thuộc JS,
+     đảm bảo iOS đọc được ngay khi bấm "Thêm vào Màn hình chính") ===== -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Thu%20Chi%20and%20No%20Ca%20Nhan%22%2C%22short_name%22%3A%22ThuChi%22%2C%22start_url%22%3A%22.%22%2C%22scope%22%3A%22.%22%2C%22id%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230b1220%22%2C%22theme_color%22%3A%22%232451e8%22%7D">
+
+<!-- Icon tĩnh mặc định (JS sẽ nâng cấp thành icon đẹp hơn sau khi tải xong) -->
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ctext%20x='96'%20y='130'%20font-size='110'%20font-family='Arial,%20sans-serif'%20fill='white'%20text-anchor='middle'%20font-weight='bold'%3ET%3C/text%3E%3C/svg%3E">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ctext%20x='96'%20y='130'%20font-size='110'%20font-family='Arial,%20sans-serif'%20fill='white'%20text-anchor='middle'%20font-weight='bold'%3ET%3C/text%3E%3C/svg%3E">
 <style>
 /* ===== DESIGN TOKENS ===== */
 :root{
@@ -531,7 +539,14 @@ function modalHeader(title){
   return '<div class="modal-close"><button type="button" onclick="PTM.closeModal()">✕</button></div><h2>'+title+'</h2>';
 }
 
-/* ===================== PWA SETUP ===================== */
+/* ===================== PWA SETUP =====================
+   Manifest da duoc nhung TINH truc tiep trong the <link rel="manifest">
+   o phan <head> (Data URI), KHONG con phu thuoc vao JS/blob URL nua.
+   Ly do: blob URL chi ton tai trong phien tai trang hien tai, neu iOS
+   doc manifest truoc khi script chay xong (hoac o lan mo lai sau) se
+   khong thay app la standalone -> bi bat ra Safari kem thanh dia chi.
+   Ham nay chi con nhiem vu nang cap icon (thay icon tinh bang icon
+   canvas dep hon) va khong dung lai vao viec quyet dinh che do standalone. */
 function generateIcon(size){
   var canvas = document.createElement('canvas');
   canvas.width = size; canvas.height = size;
@@ -561,26 +576,10 @@ function roundRectPath(ctx,x,y,w,h,r){
 function setupPWA(){
   try{
     var icon192 = generateIcon(192);
-    var icon512 = generateIcon(512);
-    var manifest = {
-      name: 'Quản lý Thu Chi & Nợ Cá Nhân',
-      short_name: 'ThuChi',
-      start_url: './',
-      scope: './',
-      display: 'standalone',
-      orientation: 'portrait',
-      background_color: '#0b1220',
-      theme_color: '#2451e8',
-      icons: [
-        { src: icon192, sizes:'192x192', type:'image/png' },
-        { src: icon512, sizes:'512x512', type:'image/png' }
-      ]
-    };
-    var blob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
-    var url = URL.createObjectURL(blob);
-    document.getElementById('manifestLink').setAttribute('href', url);
-    document.getElementById('appleTouchIcon').setAttribute('href', icon192);
-    document.getElementById('favicon').setAttribute('href', icon192);
+    var appleIconEl = document.getElementById('appleTouchIcon');
+    var faviconEl = document.getElementById('favicon');
+    if (appleIconEl) appleIconEl.setAttribute('href', icon192);
+    if (faviconEl) faviconEl.setAttribute('href', icon192);
   }catch(e){}
 }
 function registerSW(){
@@ -620,6 +619,35 @@ function applyTheme(){
   var t = state.settings.theme || 'auto';
   if (t === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', t);
+}
+
+/* ===================== CHONG BI NHAY SANG SAFARI =====================
+   Khi app dang chay o che do standalone (da mo tu icon Man hinh chinh),
+   moi cu click vao the <a href> se duoc chan lai va tu dieu huong trong
+   cung ngu canh standalone thay vi de he thong mo mot tab Safari moi.
+   Link cung origin -> dieu huong ngay tai cho. Link khac origin (vd link
+   ngoai) -> chu dong mo bang trinh duyet he thong (hanh vi mong doi cho
+   link ngoai), khong lam "vo" trai nghiem standalone cua chinh app. */
+function preventExternalNavigation(){
+  var isStandalone = (window.navigator.standalone === true) ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if (!isStandalone) return;
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('data:') === 0 || href.indexOf('blob:') === 0) return;
+    try{
+      var url = new URL(href, window.location.href);
+      if (url.origin === window.location.origin){
+        e.preventDefault();
+        window.location.href = url.href;
+      } else {
+        e.preventDefault();
+        window.open(url.href, '_blank');
+      }
+    }catch(err){}
+  }, true);
 }
 
 /* ===================== NAVIGATION ===================== */
@@ -1592,6 +1620,7 @@ function init(){
   registerSW();
   applyTheme();
   applyRecurringTransactions();
+  preventExternalNavigation();
   attachGlobalEvents();
   switchView('dashboard');
   if (state.settings.pinEnabled){
