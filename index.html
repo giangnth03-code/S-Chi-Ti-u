@@ -323,6 +323,23 @@ label{font-size:var(--fs-meta);color:var(--text-dim);display:block;margin:14px 0
 
 .hidden{display:none !important;}
 .small-note{font-size:var(--fs-meta);color:var(--text-dim);margin-top:10px;line-height:1.5;}
+
+/* ===== DEBT INSTALLMENT GRID (nang cap module no co lai suat) ===== */
+.installment-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.installment-chip{
+  min-width:44px;height:36px;padding:0 10px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;font-weight:700;border:1px solid var(--border);
+  background:var(--bg-soft);color:var(--text-dim);
+}
+.installment-chip.paid{background:var(--success-bg);color:var(--success);border-color:transparent;}
+.installment-chip.due{background:var(--primary);color:#fff;border-color:transparent;}
+.installment-chip.locked{opacity:.45;}
+.history-list{margin-top:10px;}
+.history-row{display:flex;justify-content:space-between;font-size:var(--fs-meta);padding:8px 0;border-bottom:1px solid var(--border);}
+.history-row:last-child{border-bottom:none;}
+.history-row .m{color:var(--text-dim);}
+.history-row b{color:var(--text);}
 </style>
 </head>
 <body>
@@ -464,9 +481,24 @@ function loadState(){
     var d2 = state.debts[j];
     d2.totalAmount = toNumber(d2.totalAmount);
     d2.months = toNumber(d2.months);
-    d2.monthlyAmount = toNumber(d2.monthlyAmount);
-    d2.paidMonths = toNumber(d2.paidMonths);
-    d2.remaining = toNumber(d2.remaining);
+    d2.interestRate = toNumber(d2.interestRate || 0);
+
+    if (!Array.isArray(d2.paidHistory)){
+      /* chuyen du lieu no cu (history/monthlyAmount) sang dinh dang moi co lai suat */
+      d2.paidHistory = [];
+      if (Array.isArray(d2.history)){
+        var oldMonthly = toNumber(d2.monthlyAmount) || (d2.totalAmount / (d2.months || 1));
+        for (var h=0; h<d2.history.length; h++){
+          var old = d2.history[h];
+          d2.paidHistory.push({
+            month: old.month, principal: oldMonthly, interest: 0,
+            amount: toNumber(old.amount) || oldMonthly, paidAt: old.date || todayStr()
+          });
+        }
+      }
+      delete d2.monthlyAmount; delete d2.paidMonths; delete d2.remaining; delete d2.lastPaidMonth; delete d2.history;
+    }
+    if (!d2.status) d2.status = 'active';
   }
   for (var cat in state.budgets){ state.budgets[cat] = toNumber(state.budgets[cat]); }
   for (var k=0;k<state.recurring.length;k++){ state.recurring[k].amount = toNumber(state.recurring[k].amount); }
@@ -617,10 +649,53 @@ function renderView(view){
 function renderAll(){ renderView(currentView); }
 
 /* ===================== COMPUTATIONS ===================== */
+function debtMonthlyPrincipal(d){
+  return toNumber(d.totalAmount) / toNumber(d.months);
+}
+function debtRemaining(d){
+  var paidPrincipal = 0;
+  for (var i=0;i<d.paidHistory.length;i++) paidPrincipal += toNumber(d.paidHistory[i].principal);
+  return Math.max(toNumber(d.totalAmount) - paidPrincipal, 0);
+}
+function debtNextInstallment(d){
+  var remaining = debtRemaining(d);
+  var principal = Math.min(debtMonthlyPrincipal(d), remaining);
+  var interest = remaining * (toNumber(d.interestRate) / 100);
+  return { principal: principal, interest: interest, total: principal + interest, remainingBefore: remaining };
+}
+function debtIsFullyPaid(d){
+  return d.paidHistory.length >= toNumber(d.months) || debtRemaining(d) <= 0;
+}
+function addMonthsToYearMonth(y, m, add){
+  var total = (y*12 + (m-1)) + add;
+  return { y: Math.floor(total/12), m: (total%12)+1 };
+}
+function buildPaidHistory(total, months, rate, startDate, count){
+  var arr = [];
+  var remaining = toNumber(total);
+  var monthlyPrincipal = remaining && months ? toNumber(total)/toNumber(months) : 0;
+  var parts = (startDate||todayStr()).split('-');
+  var y = toNumber(parts[0]) || (new Date()).getFullYear();
+  var m = toNumber(parts[1]) || 1;
+  for (var i=0;i<count;i++){
+    var principal = Math.min(monthlyPrincipal, remaining);
+    var interest = remaining * (toNumber(rate)/100);
+    var ym = addMonthsToYearMonth(y, m, i);
+    var mk = ym.y + '-' + pad2(ym.m);
+    arr.push({ month: mk, principal: principal, interest: interest, amount: principal+interest, paidAt: mk+'-01' });
+    remaining -= principal;
+  }
+  return arr;
+}
 function getDebtObligationThisMonth(){
   var total = 0;
+  var mk = currentMonthKey();
   for (var i=0;i<state.debts.length;i++){
-    if (state.debts[i].status === 'active') total += toNumber(state.debts[i].monthlyAmount);
+    var d = state.debts[i];
+    if (d.status !== 'active' || debtIsFullyPaid(d)) continue;
+    var count = d.paidHistory.length;
+    var paidThisMonth = count > 0 && d.paidHistory[count-1].month === mk;
+    if (!paidThisMonth) total += debtNextInstallment(d).total;
   }
   return total;
 }
@@ -895,21 +970,49 @@ function renderDebtsView(){
   }
   for (var i=0;i<state.debts.length;i++){
     var d = state.debts[i];
-    var pct = Math.min(100, Math.round((d.paidMonths / d.months) * 100));
-    var paidThisMonth = d.lastPaidMonth === mk;
+    var months = toNumber(d.months);
+    var remaining = debtRemaining(d);
+    var next = debtNextInstallment(d);
+    var paidCount = d.paidHistory.length;
+    var pct = Math.min(100, Math.round((paidCount / months) * 100));
+    var paidThisMonth = paidCount > 0 && d.paidHistory[paidCount-1].month === mk;
+    var isDone = d.status === 'done' || debtIsFullyPaid(d);
+
     html += '<div class="debt-card">';
     html += '<div class="head"><span class="name">'+escapeHtml(d.name)+'</span>';
-    if (d.status === 'done') html += '<span class="status-badge">Đã hoàn thành</span>';
+    if (isDone) html += '<span class="status-badge">Đã hoàn thành</span>';
     else if (paidThisMonth) html += '<span class="status-badge">Đã trả tháng này</span>';
     html += '</div>';
     html += '<div class="row"><span>Tổng nợ</span><b>'+formatMoney(d.totalAmount)+'</b></div>';
-    html += '<div class="row"><span>Mỗi tháng</span><b>'+formatMoney(d.monthlyAmount)+'</b></div>';
-    html += '<div class="row"><span>Đã trả</span><b>'+d.paidMonths+'/'+d.months+' tháng</b></div>';
-    html += '<div class="row"><span>Dư nợ còn lại</span><b>'+formatMoney(d.remaining)+'</b></div>';
+    html += '<div class="row"><span>Lãi suất</span><b>'+(toNumber(d.interestRate)>0 ? toNumber(d.interestRate)+'%/tháng' : 'Không lãi (0%)')+'</b></div>';
+    html += '<div class="row"><span>Gốc/tháng</span><b>'+formatMoney(debtMonthlyPrincipal(d))+'</b></div>';
+    if (!isDone){
+      html += '<div class="row"><span>Lãi kỳ tới</span><b>'+formatMoney(next.interest)+'</b></div>';
+      html += '<div class="row"><span>Tổng cần trả kỳ tới</span><b>'+formatMoney(next.total)+'</b></div>';
+    }
+    html += '<div class="row"><span>Đã trả</span><b>'+paidCount+'/'+months+' kỳ</b></div>';
+    html += '<div class="row"><span>Còn lại</span><b>'+Math.max(months-paidCount,0)+' kỳ</b></div>';
+    html += '<div class="row"><span>Dư nợ gốc còn lại</span><b>'+formatMoney(remaining)+'</b></div>';
     html += '<div class="progress-track"><div class="progress-fill'+(pct>=100?' danger':pct>=80?' warn':'')+'" style="width:'+pct+'%"></div></div>';
+
+    html += '<div class="installment-grid">';
+    for (var k=0;k<months;k++){
+      if (k < paidCount){
+        var ph = d.paidHistory[k];
+        html += '<div class="installment-chip paid" title="Kỳ '+(k+1)+': đã trả '+formatMoney(ph.amount)+' ('+formatDateDisplay(ph.paidAt)+')">✓ '+(k+1)+'</div>';
+      } else if (!isDone){
+        /* khong khoa thu tu: bam vao ky nao cung duoc, se ghi nhan la ky tiep theo trong hang doi */
+        html += '<button type="button" class="installment-chip due" data-pay-installment="'+d.id+'" title="Trả kỳ '+(k+1)+'">'+(k+1)+'</button>';
+      } else {
+        html += '<div class="installment-chip locked">'+(k+1)+'</div>';
+      }
+    }
+    html += '</div>';
+
     html += '<div class="debt-actions">';
-    html += '<button type="button" class="btn success" data-pay-debt="'+d.id+'" '+((d.status==='done'||paidThisMonth)?'disabled':'')+'>Trả nợ tháng này</button>';
-    html += '<button type="button" class="btn danger" data-settle-debt="'+d.id+'" '+(d.status==='done'?'disabled':'')+'>Tất toán sớm</button>';
+    html += '<button type="button" class="btn success" data-pay-debt="'+d.id+'" '+((isDone||paidThisMonth)?'disabled':'')+'>Trả kỳ tiếp theo</button>';
+    html += '<button type="button" class="btn danger" data-settle-debt="'+d.id+'" '+(isDone?'disabled':'')+'>Tất toán sớm</button>';
+    html += '<button type="button" class="btn secondary" data-history-debt="'+d.id+'">Lịch sử</button>';
     html += '<button type="button" class="btn secondary" data-edit-debt="'+d.id+'">Sửa</button>';
     html += '<button type="button" class="btn secondary" data-del-debt="'+d.id+'">Xóa</button>';
     html += '</div></div>';
@@ -925,30 +1028,35 @@ function openDebtModal(editId){
   html += '<label>Tên chủ nợ</label><input type="text" id="dName" value="'+(editing?escapeAttr(editing.name):'')+'" placeholder="VD: Ngân hàng ABC">';
   html += '<label>Tổng nợ ban đầu</label><input type="number" id="dTotal" value="'+(editing?editing.totalAmount:'')+'">';
   html += '<div class="form-row"><div><label>Số tháng kỳ hạn</label><input type="number" id="dMonths" value="'+(editing?editing.months:'')+'"></div>';
-  html += '<div><label>Ngày bắt đầu</label><input type="date" id="dStart" value="'+(editing?editing.startDate:todayStr())+'"></div></div>';
+  html += '<div><label>Lãi suất (%/tháng)</label><input type="number" step="0.01" id="dRate" value="'+(editing?toNumber(editing.interestRate):0)+'" placeholder="0"></div></div>';
+  html += '<label>Ngày bắt đầu</label><input type="date" id="dStart" value="'+(editing?editing.startDate:todayStr())+'">';
+  html += '<label>Số kỳ đã thanh toán (nếu vay từ trước, tự chỉnh cho khớp thực tế)</label><input type="number" min="0" id="dPaidCount" value="'+(editing?editing.paidHistory.length:0)+'" placeholder="0">';
+  html += '<div class="small-note">Đây là con số bạn tự khai để đồng bộ với thực tế (VD: vay 12 kỳ, đã trả 6 kỳ bên ngoài trước khi dùng app thì nhập 6). Hệ thống sẽ tự tính lại gốc/lãi từng kỳ đã trả theo số này, KHÔNG tạo giao dịch chi tiêu tương ứng.</div>';
   html += '<button type="button" class="btn block" id="saveDebtBtn">'+(editing?'Lưu thay đổi':'Thêm khoản nợ')+'</button>';
   openModal(html);
   document.getElementById('saveDebtBtn').addEventListener('click', function(){
     var name = document.getElementById('dName').value.trim();
     var total = toNumber(document.getElementById('dTotal').value);
     var months = toNumber(document.getElementById('dMonths').value);
+    var rate = toNumber(document.getElementById('dRate').value);
     var start = document.getElementById('dStart').value || todayStr();
+    var paidCountInput = Math.max(0, Math.min(months, toNumber(document.getElementById('dPaidCount').value)));
     if (!name || !total || total <= 0 || !months || months <= 0){ showToast('Vui lòng nhập đầy đủ thông tin hợp lệ'); return; }
     if (editing){
-      var paidAmount = toNumber(editing.totalAmount) - toNumber(editing.remaining);
       editing.name = name;
       editing.totalAmount = total;
       editing.months = months;
+      editing.interestRate = rate;
       editing.startDate = start;
-      editing.monthlyAmount = total / months;
-      editing.remaining = Math.max(total - paidAmount, 0);
-      if (editing.remaining <= 0){ editing.status = 'done'; editing.remaining = 0; }
-      else editing.status = 'active';
+      editing.paidHistory = buildPaidHistory(total, months, rate, start, paidCountInput);
+      editing.status = debtIsFullyPaid(editing) ? 'done' : 'active';
     } else {
-      state.debts.push({
-        id: uid(), name: name, totalAmount: total, months: months, startDate: start,
-        monthlyAmount: total / months, paidMonths: 0, remaining: total, status: 'active', lastPaidMonth: null, history: []
-      });
+      var newDebt = {
+        id: uid(), name: name, totalAmount: total, months: months, interestRate: rate,
+        startDate: start, status: 'active', paidHistory: buildPaidHistory(total, months, rate, start, paidCountInput)
+      };
+      if (debtIsFullyPaid(newDebt)) newDebt.status = 'done';
+      state.debts.push(newDebt);
     }
     saveDebts();
     closeModal();
@@ -959,43 +1067,68 @@ function openDebtModal(editId){
 function payDebtMonth(id){
   var d = null;
   for (var i=0;i<state.debts.length;i++){ if (state.debts[i].id === id){ d = state.debts[i]; break; } }
-  if (!d || d.status === 'done') return;
+  if (!d || debtIsFullyPaid(d)) return;
   var mk = currentMonthKey();
-  if (d.lastPaidMonth === mk){ showToast('Đã ghi nhận trả nợ tháng này rồi'); return; }
-  var amount = toNumber(Math.min(d.monthlyAmount, d.remaining));
-  d.remaining = Math.max(toNumber(d.remaining) - amount, 0);
-  d.paidMonths = toNumber(d.paidMonths) + 1;
-  d.lastPaidMonth = mk;
-  d.history.push({ month: mk, amount: amount, date: todayStr() });
-  if (d.remaining <= 0){ d.status = 'done'; }
+  var paidCount = d.paidHistory.length;
+  if (paidCount > 0 && d.paidHistory[paidCount-1].month === mk){
+    showToast('Đã ghi nhận trả nợ tháng này rồi'); return;
+  }
+  var next = debtNextInstallment(d);
+  d.paidHistory.push({
+    month: mk,
+    principal: next.principal,
+    interest: next.interest,
+    amount: next.total,
+    paidAt: todayStr()
+  });
+  if (debtIsFullyPaid(d)) d.status = 'done';
   state.transactions.push({
-    id: uid(), type: 'chi', amount: amount, category: 'Trả nợ', date: todayStr(), source: 'cash',
-    note: 'Trả nợ tháng ' + mk + ' - ' + d.name, debtId: d.id
+    id: uid(), type: 'chi', amount: next.total, category: 'Trả nợ', date: todayStr(), source: 'cash',
+    note: 'Trả nợ kỳ '+(paidCount+1)+' (gốc '+formatMoney(next.principal)+' + lãi '+formatMoney(next.interest)+') - '+d.name,
+    debtId: d.id
   });
   saveDebts(); saveTransactions();
   renderAll();
-  showToast('Đã ghi nhận trả nợ tháng này');
+  showToast('Đã ghi nhận trả nợ kỳ '+(paidCount+1));
 }
 function settleDebtEarly(id){
   var d = null;
   for (var i=0;i<state.debts.length;i++){ if (state.debts[i].id === id){ d = state.debts[i]; break; } }
-  if (!d || d.status === 'done') return;
-  if (!confirm('Tất toán toàn bộ dư nợ còn lại ('+formatMoney(d.remaining)+') ngay bây giờ?')) return;
-  var amount = toNumber(d.remaining);
-  if (amount > 0){
+  if (!d || debtIsFullyPaid(d)) return;
+  var remaining = debtRemaining(d);
+  if (!confirm('Tất toán toàn bộ dư nợ gốc còn lại ('+formatMoney(remaining)+') ngay bây giờ?')) return;
+  var mk = currentMonthKey();
+  if (remaining > 0){
+    d.paidHistory.push({
+      month: mk, principal: remaining, interest: 0, amount: remaining, paidAt: todayStr()
+    });
     state.transactions.push({
-      id: uid(), type: 'chi', amount: amount, category: 'Trả nợ', date: todayStr(), source: 'cash',
+      id: uid(), type: 'chi', amount: remaining, category: 'Trả nợ', date: todayStr(), source: 'cash',
       note: 'Tất toán sớm - ' + d.name, debtId: d.id
     });
   }
-  d.remaining = 0;
-  d.paidMonths = d.months;
   d.status = 'done';
-  d.lastPaidMonth = currentMonthKey();
-  d.history.push({ month: currentMonthKey(), amount: amount, date: todayStr() });
   saveDebts(); saveTransactions();
   renderAll();
   showToast('Đã tất toán khoản nợ');
+}
+function openDebtHistoryModal(id){
+  var d = null;
+  for (var i=0;i<state.debts.length;i++){ if (state.debts[i].id === id){ d = state.debts[i]; break; } }
+  if (!d) return;
+  var html = modalHeader('Lịch sử trả nợ - '+escapeHtml(d.name));
+  if (!d.paidHistory.length){
+    html += '<div class="empty-state"><span class="icon-box">🧾</span>Chưa có kỳ nào được thanh toán</div>';
+  } else {
+    html += '<div class="history-list">';
+    for (var i=0;i<d.paidHistory.length;i++){
+      var ph = d.paidHistory[i];
+      html += '<div class="history-row"><span class="m">Kỳ '+(i+1)+' • '+formatDateDisplay(ph.paidAt)+'</span><b>'+formatMoney(ph.amount)+'</b></div>';
+      html += '<div class="history-row"><span class="m">Gốc: '+formatMoney(ph.principal)+' • Lãi: '+formatMoney(ph.interest||0)+'</span><span></span></div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
 }
 function deleteDebtConfirm(id){
   if (!confirm('Xóa khoản nợ này? Các giao dịch đã ghi nhận sẽ không bị xóa.')) return;
@@ -1220,8 +1353,9 @@ function importJSONFile(file){
       for (var i=0;i<state.transactions.length;i++){ state.transactions[i].amount = toNumber(state.transactions[i].amount); }
       for (var j=0;j<state.debts.length;j++){
         state.debts[j].totalAmount = toNumber(state.debts[j].totalAmount);
-        state.debts[j].monthlyAmount = toNumber(state.debts[j].monthlyAmount);
-        state.debts[j].remaining = toNumber(state.debts[j].remaining);
+        state.debts[j].months = toNumber(state.debts[j].months);
+        state.debts[j].interestRate = toNumber(state.debts[j].interestRate || 0);
+        if (!Array.isArray(state.debts[j].paidHistory)) state.debts[j].paidHistory = [];
       }
       saveAll();
       applyTheme();
@@ -1362,8 +1496,12 @@ function attachGlobalEvents(){
 
     var payDebt = e.target.closest('[data-pay-debt]');
     if (payDebt){ payDebtMonth(payDebt.getAttribute('data-pay-debt')); return; }
+    var payInstallment = e.target.closest('[data-pay-installment]');
+    if (payInstallment){ payDebtMonth(payInstallment.getAttribute('data-pay-installment')); return; }
     var settleDebt = e.target.closest('[data-settle-debt]');
     if (settleDebt){ settleDebtEarly(settleDebt.getAttribute('data-settle-debt')); return; }
+    var histDebt = e.target.closest('[data-history-debt]');
+    if (histDebt){ openDebtHistoryModal(histDebt.getAttribute('data-history-debt')); return; }
     var editDebt = e.target.closest('[data-edit-debt]');
     if (editDebt){ openDebtModal(editDebt.getAttribute('data-edit-debt')); return; }
     var delDebt = e.target.closest('[data-del-debt]');
