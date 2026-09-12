@@ -16,6 +16,10 @@
 
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ccircle%20cx='96'%20cy='96'%20r='58'%20fill='white'/%3E%3Ctext%20x='96'%20y='108'%20font-size='68'%20font-family='Arial,%20sans-serif'%20fill='%232451e8'%20text-anchor='middle'%20font-weight='bold'%3E%E2%82%AB%3C/text%3E%3C/svg%3E">
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20192%20192'%3E%3Crect%20width='192'%20height='192'%20rx='40'%20fill='%232451e8'/%3E%3Ccircle%20cx='96'%20cy='96'%20r='58'%20fill='white'/%3E%3Ctext%20x='96'%20y='108'%20font-size='68'%20font-family='Arial,%20sans-serif'%20fill='%232451e8'%20text-anchor='middle'%20font-weight='bold'%3E%E2%82%AB%3C/text%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js" defer></script>
 <style>
 :root{
   --bg:#f8fafc;
@@ -371,43 +375,37 @@ button.pay-schedule-row:disabled{opacity:.55;cursor:default;}
 .status-pill.due{background:var(--primary);color:#fff;}
 .status-pill.pending{background:var(--bg-soft);color:var(--text-dim);}
 
-/* ===== CUSTOM SELECT (thay the select goc) ===== */
-.csel-wrap{position:relative;}
-.csel-native{position:absolute !important;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;}
-.csel-trigger{
-  width:100%;height:var(--control-h);padding:0 38px 0 13px;border-radius:var(--radius-control);
+/* ===== NATIVE SELECT FIX (khong dung dropdown gia lap nua) =====
+   Dung thang <select> mac dinh cua trinh duyet/OS de mo Picker native
+   tren iOS/Android, vuot cuon muot, khong bao gio bi vo dong hay
+   van ra ngoai man hinh. */
+select, select option{
+  white-space:nowrap !important;
+  word-break:keep-all !important;
+}
+select{
+  min-width:140px !important;
+  text-overflow:ellipsis;
+}
+
+/* ===== STICKY MODAL HEADER ===== */
+.modal-sticky-header{
+  position:sticky;top:0;z-index:10;background:var(--bg-elevated);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:2px 0 14px;margin:-2px 0 4px;
+}
+.modal-sticky-header h2{font-size:17px;font-weight:700;margin:0;}
+.modal-close-btn{
+  background:var(--bg-soft);border:none;width:36px;height:36px;border-radius:10px;
+  font-size:15px;color:var(--text-dim);flex-shrink:0;
+}
+
+/* ===== FLATPICKR THEMING (khop voi giao dien app) ===== */
+.flatpickr-calendar{z-index:600 !important;box-shadow:var(--shadow);border-radius:14px;}
+.flatpickr-input.hidden{display:block !important;}
+input.flatpickr-alt-input, input[type="text"].form-control.input{
+  width:100%;height:var(--control-h);padding:0 13px;border-radius:var(--radius-control);
   border:1px solid var(--border);background:var(--bg-soft);color:var(--text);font-size:var(--fs-body);
-  font-weight:700;display:flex;align-items:center;text-align:left;position:relative;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  transition:border-color .15s var(--ease),background-color .15s var(--ease);
-}
-.csel-trigger::after{
-  content:"";position:absolute;right:14px;top:50%;width:10px;height:10px;
-  border-right:2.2px solid var(--text-dim);border-bottom:2.2px solid var(--text-dim);
-  transform:translateY(-70%) rotate(45deg);transition:transform .2s var(--ease);
-  pointer-events:none;
-}
-.csel-trigger.open{border-color:var(--primary);background:var(--primary-soft);}
-.csel-trigger.open::after{transform:translateY(-30%) rotate(-135deg);}
-.csel-trigger:disabled{opacity:.5;}
-.csel-panel{
-  position:fixed;z-index:400;background:var(--bg-elevated);border:1px solid var(--border);
-  border-radius:14px;box-shadow:0 12px 32px -6px rgba(0,0,0,0.28);
-  max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px;
-  display:none;
-}
-.csel-panel.open{display:block;}
-.csel-option{
-  padding:11px 12px;border-radius:9px;font-size:14.5px;font-weight:600;color:var(--text);
-  cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;
-}
-.csel-option:active{background:var(--bg-soft);}
-.csel-option.selected{background:var(--primary-soft);color:var(--primary);}
-.csel-option .csel-check{color:var(--primary);font-weight:800;opacity:0;}
-.csel-option.selected .csel-check{opacity:1;}
-@media (hover:hover){
-  .csel-option:hover{background:var(--bg-soft);}
-  .csel-option.selected:hover{background:var(--primary-soft);}
 }
 </style>
 </head>
@@ -450,7 +448,6 @@ button.pay-schedule-row:disabled{opacity:.55;cursor:default;}
 <div id="modalOverlay" class="modal-overlay hidden"><div class="modal-box" id="modalBox"></div></div>
 <div id="toast" class="toast hidden"></div>
 <input type="file" id="importFileInput" accept="application/json" class="hidden">
-<div id="cselPanel" class="csel-panel"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 <script defer>
@@ -551,95 +548,25 @@ function attachMoneyInputFormatting(el){
 }
 function readMoneyInput(el){ return el ? toNumber(el.value.replace(/\D/g,'')) : 0; }
 
-/* ===================== CUSTOM SELECT (thay the select goc) ===================== */
-/* Mot panel dung chung duy nhat, gan vao <body>, khong tao/xoa DOM lien tuc
-   -> tranh ro ri bo nho khi render lai nhieu lan. Panel dinh vi fixed de
-   khong bi cat trong modal cuon (overflow:auto). */
-var cselOpenSelect = null;
-
-function closeCselPanel(){
-  var panel = document.getElementById('cselPanel');
-  if (panel){ panel.classList.remove('open'); panel.innerHTML = ''; }
-  if (cselOpenSelect && cselOpenSelect._cselTrigger){ cselOpenSelect._cselTrigger.classList.remove('open'); }
-  cselOpenSelect = null;
-}
-function cselTriggerLabel(select){
-  var opt = select.options[select.selectedIndex];
-  return opt ? opt.textContent : '';
-}
-function positionCselPanel(trigger, panel){
-  var r = trigger.getBoundingClientRect();
-  var vh = window.innerHeight;
-  var spaceBelow = vh - r.bottom;
-  var spaceAbove = r.top;
-  var maxH = 280;
-  panel.style.left = r.left + 'px';
-  panel.style.width = r.width + 'px';
-  if (spaceBelow >= 160 || spaceBelow >= spaceAbove){
-    panel.style.top = (r.bottom + 6) + 'px';
-    panel.style.bottom = 'auto';
-    panel.style.maxHeight = Math.max(120, Math.min(maxH, spaceBelow - 14)) + 'px';
-  } else {
-    panel.style.bottom = (vh - r.top + 6) + 'px';
-    panel.style.top = 'auto';
-    panel.style.maxHeight = Math.max(120, Math.min(maxH, spaceAbove - 14)) + 'px';
-  }
-}
-function openCselPanel(select){
-  var panel = document.getElementById('cselPanel');
-  if (!panel) return;
-  if (cselOpenSelect === select){ closeCselPanel(); return; }
-  closeCselPanel();
-  var html = '';
-  for (var i=0;i<select.options.length;i++){
-    var opt = select.options[i];
-    html += '<div class="csel-option'+(i===select.selectedIndex?' selected':'')+'" data-csel-idx="'+i+'"><span>'+escapeHtml(opt.textContent)+'</span><span class="csel-check">✓</span></div>';
-  }
-  panel.innerHTML = html;
-  positionCselPanel(select._cselTrigger, panel);
-  panel.classList.add('open');
-  select._cselTrigger.classList.add('open');
-  cselOpenSelect = select;
-  var selOpt = panel.querySelector('.csel-option.selected');
-  if (selOpt && selOpt.scrollIntoView) selOpt.scrollIntoView({ block: 'nearest' });
-}
-function chooseCselOption(idx){
-  if (!cselOpenSelect) return;
-  var select = cselOpenSelect;
-  closeCselPanel();
-  if (select.selectedIndex !== idx){
-    select.selectedIndex = idx;
-    select._cselTrigger.textContent = cselTriggerLabel(select);
-    var evt = document.createEvent('Event');
-    evt.initEvent('change', true, true);
-    select.dispatchEvent(evt);
-  }
-}
-/* Boc moi <select> chua duoc nang cap thanh trigger tuy chinh, giu nguyen
-   the <select> that (an di, khong xoa) de moi logic doc/ghi .value cu
-   van hoat dong binh thuong - chi thay lop giao dien ben tren. */
-function enhanceSelects(root){
-  root = root || document;
-  var selects = root.querySelectorAll('select:not([data-csel-done])');
-  for (var i=0;i<selects.length;i++){
-    (function(select){
-      select.setAttribute('data-csel-done','1');
-      select.classList.add('csel-native');
-      var wrap = document.createElement('span');
-      wrap.className = 'csel-wrap';
-      select.parentNode.insertBefore(wrap, select);
-      wrap.appendChild(select);
-      var trigger = document.createElement('button');
-      trigger.type = 'button';
-      trigger.className = 'csel-trigger';
-      trigger.textContent = cselTriggerLabel(select);
-      if (select.hasAttribute('aria-label')) trigger.setAttribute('aria-label', select.getAttribute('aria-label'));
-      if (select.disabled) trigger.disabled = true;
-      wrap.appendChild(trigger);
-      select._cselTrigger = trigger;
-      trigger.addEventListener('click', function(e){ e.stopPropagation(); openCselPanel(select); });
-    })(selects[i]);
-  }
+/* Khoi tao Flatpickr (hien thi ngay than thien bang tieng Viet) cho o chon
+   ngay thanh toan hang thang. Gia tri goc cua input van la 'YYYY-MM-DD'
+   (dateFormat) de tuong thich voi phan logic doc .value con lai, con
+   altInput hien thi dang 'Thu X, dd/mm/yyyy' cho nguoi dung. */
+function initDebtDatePicker(inputEl){
+  if (!inputEl || typeof flatpickr === 'undefined') return;
+  if (inputEl._flatpickr) inputEl._flatpickr.destroy();
+  var currentVal = inputEl.value || todayStr();
+  flatpickr(inputEl, {
+    locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.vn) ? 'vn' : undefined,
+    dateFormat: 'Y-m-d',
+    altInput: true,
+    altFormat: 'l, d/m/Y',
+    defaultDate: currentVal,
+    disableMobile: true,
+    onChange: function(selectedDates, dateStr){
+      inputEl.value = dateStr;
+    }
+  });
 }
 
 /* ===================== STORAGE ===================== */
@@ -696,19 +623,17 @@ function showToast(msg){
   showToast._t = setTimeout(function(){ el.classList.add('hidden'); }, 2200);
 }
 function openModal(html){
-  closeCselPanel();
   var box = document.getElementById('modalBox');
   box.innerHTML = html;
   document.getElementById('modalOverlay').classList.remove('hidden');
-  enhanceSelects(box);
+  box.scrollTop = 0;
 }
 function closeModal(){
-  closeCselPanel();
   document.getElementById('modalOverlay').classList.add('hidden');
   document.getElementById('modalBox').innerHTML = '';
 }
 function modalHeader(title){
-  return '<div class="modal-close"><button type="button" onclick="PTM.closeModal()">✕</button></div><h2>'+title+'</h2>';
+  return '<div class="modal-sticky-header"><h2>'+title+'</h2><button type="button" class="modal-close-btn" onclick="PTM.closeModal()">✕</button></div>';
 }
 
 /* ===================== PWA SETUP ===================== */
@@ -783,7 +708,6 @@ function preventExternalNavigation(){
 
 /* ===================== NAVIGATION ===================== */
 function switchView(view){
-  closeCselPanel();
   currentView = view;
   var views = document.querySelectorAll('.view');
   for (var i=0;i<views.length;i++) views[i].classList.remove('active');
@@ -964,7 +888,6 @@ function getForecast(){
 
 /* ===================== DASHBOARD ===================== */
 function renderDashboard(){
-  closeCselPanel();
   var el = document.getElementById('view-dashboard');
   var mk = currentMonthKey();
   var balance = getBalance();
@@ -1050,7 +973,6 @@ function getFilteredTransactions(){
   return list;
 }
 function renderTransactionsView(){
-  closeCselPanel();
   var el = document.getElementById('view-transactions');
   var html = '';
   html += '<div class="tabs">';
@@ -1071,7 +993,6 @@ function renderTransactionsView(){
   html += '</div>';
   html += '<div id="txnListWrap"></div>';
   el.innerHTML = html;
-  enhanceSelects(el);
   renderTxnListInner();
 }
 function renderTxnListInner(){
@@ -1129,10 +1050,6 @@ function openTransactionModal(editId){
     seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b === btn); });
     var catSelect = document.getElementById('fCategory');
     catSelect.innerHTML = categoryOptions(t, null);
-    catSelect.removeAttribute('data-csel-done');
-    var oldWrap = catSelect.closest('.csel-wrap');
-    if (oldWrap){ oldWrap.parentNode.insertBefore(catSelect, oldWrap); oldWrap.remove(); }
-    enhanceSelects(document.getElementById('modalBox'));
   });
   document.getElementById('fDate').addEventListener('input', function(){ formatDateMaskInput(this); });
   document.getElementById('saveTxnBtn').addEventListener('click', function(){
@@ -1208,7 +1125,6 @@ function renderDebtOverviewCards(){
 }
 
 function renderDebtsView(){
-  closeCselPanel();
   var el = document.getElementById('view-debts');
   var mk = currentMonthKey();
   var html = renderDebtOverviewCards();
@@ -1288,7 +1204,6 @@ function renderDebtsView(){
     html += '</div>';
   }
   el.innerHTML = html;
-  enhanceSelects(el);
 }
 
 function quickAmountChipsHtml(){
@@ -1329,7 +1244,7 @@ function openDebtModal(editId, prefill){
   html += '<div class="small-note">Lãi suất (%) chỉ hiển thị tham khảo trên thẻ, KHÔNG dùng để tính toán. Hệ thống chia đều: Gốc/tháng = Tổng nợ / Số kỳ; Lãi/tháng = Tổng tiền lãi / Số kỳ.</div>';
 
   var defaultStartIso = todayStr();
-  html += '<label>Ngày thanh toán hàng tháng (kỳ đầu tiên)</label><input type="date" id="dStartInput" value="'+(editing?editing.startDate:(prefill?prefill.startDate:defaultStartIso))+'">';
+  html += '<label>Ngày thanh toán hàng tháng (kỳ đầu tiên)</label><input type="text" id="dStartInput" readonly value="'+(editing?editing.startDate:(prefill?prefill.startDate:defaultStartIso))+'">';
   html += '<div class="small-note">Ngày trong tháng của kỳ đầu tiên sẽ được dùng làm ngày đến hạn hàng tháng cho các kỳ tiếp theo. Chạm vào ô để mở lịch chọn ngày/tháng/năm.</div>';
 
   var paidCountSelected = editing ? editing.paidHistory.length : 0;
@@ -1342,6 +1257,7 @@ function openDebtModal(editId, prefill){
   openModal(html);
   attachMoneyInputFormatting(document.getElementById('dTotal'));
   attachMoneyInputFormatting(document.getElementById('dTotalInterest'));
+  initDebtDatePicker(document.getElementById('dStartInput'));
 
   document.getElementById('dPreset').addEventListener('change', function(){
     var wrap = document.getElementById('dNameCustomWrap');
@@ -1450,7 +1366,6 @@ function deleteDebtConfirm(id){
 
 /* ===================== BUDGET ===================== */
 function renderBudgetView(){
-  closeCselPanel();
   var el = document.getElementById('view-budget');
   var mk = currentMonthKey();
   var spentMap = getSpentByCategory(mk);
@@ -1520,10 +1435,6 @@ function openRecurringModal(editId){
     seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b === btn); });
     var catSelect = document.getElementById('rCategory');
     catSelect.innerHTML = categoryOptions(t, null);
-    catSelect.removeAttribute('data-csel-done');
-    var oldWrap = catSelect.closest('.csel-wrap');
-    if (oldWrap){ oldWrap.parentNode.insertBefore(catSelect, oldWrap); oldWrap.remove(); }
-    enhanceSelects(document.getElementById('modalBox'));
   });
   document.getElementById('saveRecBtn').addEventListener('click', function(){
     var t = seg.querySelector('button.active').getAttribute('data-type');
@@ -1561,7 +1472,6 @@ function applyRecurringTransactions(){
 
 /* ===================== SETTINGS ===================== */
 function renderSettingsView(){
-  closeCselPanel();
   var el = document.getElementById('view-settings');
   var s = state.settings;
   var html = '';
@@ -1716,27 +1626,6 @@ function attachGlobalEvents(){
   document.querySelectorAll('.bottomnav button').forEach(function(btn){
     btn.addEventListener('click', function(){ switchView(this.getAttribute('data-view')); });
   });
-
-  /* Dong panel select tuy chinh khi click ra ngoai */
-  document.addEventListener('click', function(e){
-    if (cselOpenSelect){
-      var panel = document.getElementById('cselPanel');
-      var insidePanel = panel && panel.contains(e.target);
-      var isTrigger = e.target.closest('.csel-trigger');
-      if (!insidePanel && !isTrigger) closeCselPanel();
-    }
-  }, true);
-  var cselPanelEl = document.getElementById('cselPanel');
-  if (cselPanelEl){
-    cselPanelEl.addEventListener('click', function(e){
-      var opt = e.target.closest('.csel-option');
-      if (!opt) return;
-      chooseCselOption(toNumber(opt.getAttribute('data-csel-idx')));
-    });
-  }
-  /* Dong panel khi cuon (modal hoac trang) de tranh lech vi tri, tranh cat/tran ra ngoai */
-  window.addEventListener('scroll', function(){ if (cselOpenSelect) closeCselPanel(); }, true);
-  window.addEventListener('resize', function(){ if (cselOpenSelect) closeCselPanel(); });
 
   document.addEventListener('click', function(e){
     var editTxn = e.target.closest('[data-edit-txn]');
